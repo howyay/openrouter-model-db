@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "superset": {
+      "command": "uv",
+      "args": ["run", "superset-mcp"],
+      "env": {
+        "SUPERSET_BASE_URL": "http://localhost:18630",
+        "SUPERSET_USERNAME": "admin",
+        "SUPERSET_PASSWORD": "admin"
+      }
+    }
+  }
+}
