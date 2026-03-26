@@ -1,11 +1,12 @@
 """Main orchestrator: fetch all models -> transform -> write DuckDB database."""
 
 import asyncio
+import os
 from pathlib import Path
 
 import httpx
 
-from scraper.api import fetch_model_list, fetch_all_model_pages
+from scraper.api import fetch_model_list, fetch_all_model_pages, fetch_all_model_endpoints
 from scraper.rsc import extract_rsc_model_data, extract_rsc_categories
 from scraper.benchmarks import extract_benchmarks
 from scraper.transform import (
@@ -24,7 +25,12 @@ def _progress(completed: int, total: int, slug: str):
     print(f"\r  [{completed}/{total}] {slug[:50]:<50}", end="", flush=True)
 
 
-async def scrape(output_dir: Path = DATA_DIR, concurrency: int = 10, delay: float = 0.1):
+async def scrape(
+    output_dir: Path = DATA_DIR,
+    concurrency: int = 10,
+    delay: float = 0.1,
+    api_key: str | None = None,
+):
     """Run the full scraping pipeline."""
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -35,20 +41,45 @@ async def scrape(output_dir: Path = DATA_DIR, concurrency: int = 10, delay: floa
     slugs = [m["id"] for m in api_models]
     print(f"   Found {len(slugs)} models")
 
-    print("2. Fetching model pages...")
+    if api_key:
+        print("2a. Fetching endpoint performance data (authenticated)...")
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+            endpoints_data = await fetch_all_model_endpoints(
+                client, slugs, api_key=api_key,
+                concurrency=concurrency, delay=delay, on_progress=_progress,
+            )
+        print(f"\n   Got endpoint data for {len(endpoints_data)} models")
+    else:
+        print("2a. Skipping endpoint API (no API key — latency/throughput will be null)")
+        print("    Set OPENROUTER_API_KEY or use --api-key to get performance metrics")
+        endpoints_data = {}
+
+    print("2b. Fetching model pages...")
     async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
         pages = await fetch_all_model_pages(
             client, slugs, concurrency=concurrency, delay=delay, on_progress=_progress
         )
     print(f"\n   Fetched {len(pages)} pages")
 
-    # Build lookup from API data
+    # Build lookups
     api_lookup = {m["id"]: m for m in api_models}
+
+    # Build endpoint performance lookup: slug -> {endpoint_id -> {latency, throughput, uptime}}
+    perf_lookup: dict[str, dict[str, dict]] = {}
+    for slug, ep_data in endpoints_data.items():
+        perf_lookup[slug] = {}
+        for ep in ep_data.get("endpoints") or []:
+            name = ep.get("name", "")
+            perf_lookup[slug][name] = {
+                "latency_30m": ep.get("latency_last_30m"),
+                "throughput_30m": ep.get("throughput_last_30m"),
+                "uptime_30m": ep.get("uptime_last_30m"),
+            }
 
     # Accumulators
     all_models = []
     all_endpoints = []
-    all_providers = {}  # keyed by slug for dedup
+    all_providers = {}
     all_benchmarks = []
     all_analytics = []
     all_categories = []
@@ -63,7 +94,6 @@ async def scrape(output_dir: Path = DATA_DIR, concurrency: int = 10, delay: floa
 
         # Models
         model_row = transform_model(rsc_data)
-        # Supplement with API data (tokenizer, instruct_type)
         api_model = api_lookup.get(slug, {})
         arch = api_model.get("architecture") or {}
         if not model_row.get("tokenizer"):
@@ -72,8 +102,20 @@ async def scrape(output_dir: Path = DATA_DIR, concurrency: int = 10, delay: floa
             model_row["instruct_type"] = arch.get("instruct_type")
         all_models.append(model_row)
 
-        # Endpoints
-        all_endpoints.extend(transform_endpoints(rsc_data))
+        # Endpoints — merge performance data from authenticated API
+        ep_rows = transform_endpoints(rsc_data)
+        model_perf = perf_lookup.get(slug, {})
+        for ep_row in ep_rows:
+            ep_name = ep_row.get("endpoint_name", "")
+            if ep_name in model_perf:
+                perf = model_perf[ep_name]
+                if perf["latency_30m"] is not None:
+                    ep_row["latency_30m"] = perf["latency_30m"]
+                if perf["throughput_30m"] is not None:
+                    ep_row["throughput_30m"] = perf["throughput_30m"]
+                if perf["uptime_30m"] is not None:
+                    ep_row["uptime_30m"] = perf["uptime_30m"]
+        all_endpoints.extend(ep_rows)
 
         # Provider (deduplicated)
         provider_row = transform_provider(rsc_data)
@@ -94,8 +136,13 @@ async def scrape(output_dir: Path = DATA_DIR, concurrency: int = 10, delay: floa
         rsc_categories = extract_rsc_categories(html)
         all_categories.extend(transform_categories(slug, rsc_categories))
 
+    # Count how many endpoints have perf data
+    has_latency = sum(1 for e in all_endpoints if e.get("latency_30m") is not None)
+    has_throughput = sum(1 for e in all_endpoints if e.get("throughput_30m") is not None)
+
     print(f"   Processed {len(all_models)} models, skipped {skipped}")
     print(f"   {len(all_endpoints)} endpoints, {len(all_providers)} providers")
+    print(f"   {has_latency} endpoints with latency, {has_throughput} with throughput")
     print(f"   {len(all_benchmarks)} benchmarks, {len(all_analytics)} analytics rows")
     print(f"   {len(all_categories)} category rows")
 
@@ -119,8 +166,15 @@ def cli():
     parser.add_argument("-o", "--output", default=str(DATA_DIR), help="Output directory")
     parser.add_argument("-c", "--concurrency", type=int, default=10, help="Max concurrent requests")
     parser.add_argument("-d", "--delay", type=float, default=0.1, help="Delay between requests (seconds)")
+    parser.add_argument("-k", "--api-key", default=os.environ.get("OPENROUTER_API_KEY"),
+                        help="OpenRouter API key (or set OPENROUTER_API_KEY env var)")
     args = parser.parse_args()
-    asyncio.run(scrape(output_dir=Path(args.output), concurrency=args.concurrency, delay=args.delay))
+    asyncio.run(scrape(
+        output_dir=Path(args.output),
+        concurrency=args.concurrency,
+        delay=args.delay,
+        api_key=args.api_key,
+    ))
 
 
 if __name__ == "__main__":
