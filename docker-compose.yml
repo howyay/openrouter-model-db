@@ -5,7 +5,7 @@ services:
     user: root
     network_mode: host
     volumes:
-      - ./data:/data:ro
+      - ./data:/data
       - ./superset/superset-init.sh:/superset-init.sh
       - superset_home:/app/superset_home
     environment:
