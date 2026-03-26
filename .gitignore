@@ -1,3 +1,4 @@
+data/*.duckdb
 data/*.parquet
 __pycache__/
 *.egg-info/

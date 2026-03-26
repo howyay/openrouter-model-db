@@ -1,7 +1,6 @@
-"""Main orchestrator: fetch all models -> transform -> write Parquet files."""
+"""Main orchestrator: fetch all models -> transform -> write DuckDB database."""
 
 import asyncio
-import sys
 from pathlib import Path
 
 import httpx
@@ -16,14 +15,7 @@ from scraper.transform import (
     transform_analytics,
     transform_categories,
 )
-from scraper.parquet import (
-    write_models,
-    write_endpoints,
-    write_providers,
-    write_benchmarks,
-    write_analytics,
-    write_categories,
-)
+from scraper.db import write_all
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
@@ -107,20 +99,23 @@ async def scrape(output_dir: Path = DATA_DIR, concurrency: int = 10, delay: floa
     print(f"   {len(all_benchmarks)} benchmarks, {len(all_analytics)} analytics rows")
     print(f"   {len(all_categories)} category rows")
 
-    print("4. Writing Parquet files...")
-    write_models(all_models, str(output_dir / "models.parquet"))
-    write_endpoints(all_endpoints, str(output_dir / "model_endpoints.parquet"))
-    write_providers(list(all_providers.values()), str(output_dir / "providers.parquet"))
-    write_benchmarks(all_benchmarks, str(output_dir / "model_benchmarks.parquet"))
-    write_analytics(all_analytics, str(output_dir / "model_analytics.parquet"))
-    write_categories(all_categories, str(output_dir / "model_categories.parquet"))
-    print(f"   Written to {output_dir}/")
+    db_path = str(output_dir / "openrouter.duckdb")
+    print(f"4. Writing DuckDB database to {db_path}...")
+    write_all(db_path, {
+        "models": all_models,
+        "model_endpoints": all_endpoints,
+        "providers": list(all_providers.values()),
+        "model_benchmarks": all_benchmarks,
+        "model_analytics": all_analytics,
+        "model_categories": all_categories,
+    })
+    print("   Done.")
 
 
 def cli():
     """CLI entry point."""
     import argparse
-    parser = argparse.ArgumentParser(description="Scrape OpenRouter model data to Parquet")
+    parser = argparse.ArgumentParser(description="Scrape OpenRouter model data to DuckDB")
     parser.add_argument("-o", "--output", default=str(DATA_DIR), help="Output directory")
     parser.add_argument("-c", "--concurrency", type=int, default=10, help="Max concurrent requests")
     parser.add_argument("-d", "--delay", type=float, default=0.1, help="Delay between requests (seconds)")
