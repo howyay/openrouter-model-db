@@ -8,12 +8,6 @@ CONCURRENCY_LIMIT = 10
 REQUEST_DELAY = 0.1
 
 
-def _auth_headers(api_key: str | None) -> dict[str, str]:
-    if api_key:
-        return {"Authorization": f"Bearer {api_key}"}
-    return {}
-
-
 async def fetch_model_list(client: httpx.AsyncClient) -> list[dict]:
     """Fetch all models from /api/v1/models. Returns the 'data' array."""
     resp = await client.get(f"{BASE_URL}/api/v1/models")
@@ -21,52 +15,66 @@ async def fetch_model_list(client: httpx.AsyncClient) -> list[dict]:
     return resp.json()["data"]
 
 
-async def fetch_model_endpoints(
-    client: httpx.AsyncClient, slug: str, api_key: str | None = None
-) -> dict | None:
-    """Fetch endpoint details (with latency/throughput if authenticated).
+async def fetch_endpoint_stats(
+    client: httpx.AsyncClient, permaslug: str, variant: str = "standard"
+) -> list[dict]:
+    """Fetch latency/throughput percentile stats from the frontend stats API.
 
-    Returns the 'data' object or None on failure.
+    Public endpoint, no auth needed. Returns list of endpoint stat dicts with
+    keys like p50_latency, p50_throughput, endpoint_id, etc.
     """
     try:
         resp = await client.get(
-            f"{BASE_URL}/api/v1/models/{slug}/endpoints",
-            headers=_auth_headers(api_key),
+            f"{BASE_URL}/api/frontend/stats/endpoint",
+            params={"permaslug": permaslug, "variant": variant},
         )
         resp.raise_for_status()
-        return resp.json().get("data")
+        data = resp.json().get("data", [])
+        results = []
+        for ep in data if isinstance(data, list) else [data]:
+            if isinstance(ep, dict) and "stats" in ep:
+                stats = ep["stats"]
+                stats["endpoint_id"] = ep.get("id")
+                stats["endpoint_name"] = ep.get("name")
+                results.append(stats)
+        return results
     except (httpx.HTTPStatusError, httpx.RequestError):
-        return None
+        return []
 
 
-async def fetch_all_model_endpoints(
+async def fetch_all_endpoint_stats(
     client: httpx.AsyncClient,
-    slugs: list[str],
-    api_key: str | None = None,
+    models: list[dict],
     concurrency: int = CONCURRENCY_LIMIT,
     delay: float = REQUEST_DELAY,
-    on_progress: callable = None,
-) -> dict[str, dict]:
-    """Fetch endpoint data for all models with bounded concurrency.
+    on_progress=None,
+) -> dict[str, list[dict]]:
+    """Fetch endpoint stats for all models.
 
-    Returns dict mapping slug -> endpoints API response.
+    Args:
+        models: list of dicts with 'slug' and 'permaslug' keys.
+
+    Returns dict mapping model slug -> list of endpoint stat dicts.
     """
     semaphore = asyncio.Semaphore(concurrency)
-    results: dict[str, dict] = {}
+    results: dict[str, list[dict]] = {}
     completed = 0
 
-    async def _fetch_one(slug: str):
+    async def _fetch_one(slug: str, permaslug: str):
         nonlocal completed
         async with semaphore:
-            data = await fetch_model_endpoints(client, slug, api_key)
-            if data:
-                results[slug] = data
+            stats = await fetch_endpoint_stats(client, permaslug)
+            if stats:
+                results[slug] = stats
             completed += 1
             if on_progress:
-                on_progress(completed, len(slugs), slug)
+                on_progress(completed, len(models), slug)
             await asyncio.sleep(delay)
 
-    tasks = [_fetch_one(slug) for slug in slugs]
+    tasks = [
+        _fetch_one(m["slug"], m["permaslug"])
+        for m in models if m.get("permaslug")
+    ]
     await asyncio.gather(*tasks)
     return results
 
@@ -83,7 +91,7 @@ async def fetch_all_model_pages(
     slugs: list[str],
     concurrency: int = CONCURRENCY_LIMIT,
     delay: float = REQUEST_DELAY,
-    on_progress: callable = None,
+    on_progress=None,
 ) -> dict[str, str]:
     """Fetch HTML pages for all model slugs with bounded concurrency.
 
