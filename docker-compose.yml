@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  superset:
+    image: apache/superset:latest
+    container_name: superset
+    user: root
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./data:/data:ro
+      - ./superset/superset-init.sh:/superset-init.sh
+      - superset_home:/app/superset_home
+    environment:
+      # A fixed secret key so the metadata DB remains valid across restarts.
+      # Replace with a proper random value in production.
+      SUPERSET_SECRET_KEY: "openrouter-model-db-superset-dev-key-change-me"
+      TALISMAN_ENABLED: "False"
+    entrypoint: ["/bin/bash", "/superset-init.sh"]
+
+volumes:
+  superset_home:
