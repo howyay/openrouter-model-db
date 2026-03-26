@@ -13,7 +13,7 @@ def transform_model(rsc_data: dict) -> dict:
     """Extract a flat model row from *rsc_data*."""
     m = rsc_data.get("model", {})
     arch = m.get("architecture", {})
-    defaults = m.get("default_parameters", {})
+    defaults = m.get("default_parameters") or {}
 
     return {
         "slug": m.get("slug"),
