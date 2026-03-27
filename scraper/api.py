@@ -79,6 +79,62 @@ async def fetch_all_endpoint_stats(
     return results
 
 
+async def fetch_benchmarks(
+    client: httpx.AsyncClient, slug: str
+) -> list[dict]:
+    """Fetch Artificial Analysis benchmark data for a model.
+
+    Uses the internal benchmarks API with the model's slug or permaslug.
+    Returns list of benchmark entries (usually 0-1 items).
+    """
+    try:
+        resp = await client.get(
+            f"{BASE_URL}/api/internal/v1/artificial-analysis-benchmarks",
+            params={"slug": slug},
+        )
+        resp.raise_for_status()
+        return resp.json().get("data", [])
+    except (httpx.HTTPStatusError, httpx.RequestError):
+        return []
+
+
+async def fetch_all_benchmarks(
+    client: httpx.AsyncClient,
+    models: list[dict],
+    concurrency: int = CONCURRENCY_LIMIT,
+    delay: float = REQUEST_DELAY,
+    on_progress=None,
+) -> dict[str, list[dict]]:
+    """Fetch benchmark data for all models, trying permaslug then slug.
+
+    Returns dict mapping model slug -> list of benchmark entries.
+    """
+    semaphore = asyncio.Semaphore(concurrency)
+    results: dict[str, list[dict]] = {}
+    completed = 0
+
+    async def _fetch_one(slug: str, permaslug: str):
+        nonlocal completed
+        async with semaphore:
+            # Try permaslug first (more specific), fallback to slug
+            data = await fetch_benchmarks(client, permaslug)
+            if not data:
+                data = await fetch_benchmarks(client, slug)
+            if data:
+                results[slug] = data
+            completed += 1
+            if on_progress:
+                on_progress(completed, len(models), slug)
+            await asyncio.sleep(delay)
+
+    tasks = [
+        _fetch_one(m["slug"], m["permaslug"])
+        for m in models if m.get("permaslug")
+    ]
+    await asyncio.gather(*tasks)
+    return results
+
+
 async def fetch_model_page(client: httpx.AsyncClient, slug: str) -> str:
     """Fetch the HTML of a model page. Returns raw HTML string."""
     resp = await client.get(f"{BASE_URL}/{slug}")

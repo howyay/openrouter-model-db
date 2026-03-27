@@ -5,9 +5,11 @@ from pathlib import Path
 
 import httpx
 
-from scraper.api import fetch_model_list, fetch_all_model_pages, fetch_all_endpoint_stats
+from scraper.api import (
+    fetch_model_list, fetch_all_model_pages,
+    fetch_all_endpoint_stats, fetch_all_benchmarks,
+)
 from scraper.rsc import extract_rsc_model_data, extract_rsc_categories
-from scraper.benchmarks import extract_benchmarks
 from scraper.transform import (
     transform_model,
     transform_endpoints,
@@ -88,12 +90,6 @@ async def scrape(
         if provider_row and provider_row["slug"] not in all_providers:
             all_providers[provider_row["slug"]] = provider_row
 
-        description = rsc_data["model"].get("description", "")
-        for bm in extract_benchmarks(description):
-            bm["model_slug"] = slug
-            bm["source"] = "description"
-            all_benchmarks.append(bm)
-
         all_analytics.extend(transform_analytics(rsc_data))
 
         rsc_categories = extract_rsc_categories(html)
@@ -101,8 +97,42 @@ async def scrape(
 
     print(f"   Processed {len(all_models)} models, skipped {skipped}")
 
+    # Fetch benchmarks from Artificial Analysis API
+    print("4. Fetching benchmark data...")
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+        benchmarks_data = await fetch_all_benchmarks(
+            client, model_info_for_stats,
+            concurrency=concurrency, delay=delay, on_progress=_progress,
+        )
+    print(f"\n   Got benchmarks for {len(benchmarks_data)} models")
+
+    # Transform benchmark data into flat rows
+    for slug, entries in benchmarks_data.items():
+        for entry in entries:
+            evals = entry.get("benchmark_data", {}).get("evaluations", {})
+            pcts = entry.get("percentiles", {})
+            all_benchmarks.append({
+                "model_slug": slug,
+                "aa_name": entry.get("aa_name"),
+                "intelligence_index": evals.get("artificial_analysis_intelligence_index"),
+                "coding_index": evals.get("artificial_analysis_coding_index"),
+                "agentic_index": evals.get("artificial_analysis_agentic_index"),
+                "intelligence_percentile": pcts.get("intelligence_percentile"),
+                "coding_percentile": pcts.get("coding_percentile"),
+                "agentic_percentile": pcts.get("agentic_percentile"),
+                "gpqa": evals.get("gpqa"),
+                "hle": evals.get("hle"),
+                "scicode": evals.get("scicode"),
+                "terminalbench_hard": evals.get("terminalbench_hard"),
+                "ifbench": evals.get("ifbench"),
+                "lcr": evals.get("lcr"),
+                "tau2": evals.get("tau2"),
+                "aa_omniscience_accuracy": evals.get("aa_omniscience_accuracy"),
+                "aa_omniscience_non_hallucination_rate": evals.get("aa_omniscience_non_hallucination_rate"),
+            })
+
     # Fetch latency/throughput stats from frontend API (public, no auth needed)
-    print("4. Fetching endpoint performance stats...")
+    print("5. Fetching endpoint performance stats...")
     async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
         stats_data = await fetch_all_endpoint_stats(
             client, model_info_for_stats,
@@ -147,7 +177,7 @@ async def scrape(
     print(f"   {len(all_categories)} category rows")
 
     db_path = str(output_dir / "openrouter.duckdb")
-    print(f"5. Writing DuckDB database to {db_path}...")
+    print(f"6. Writing DuckDB database to {db_path}...")
     write_all(db_path, {
         "models": all_models,
         "model_endpoints": all_endpoints,

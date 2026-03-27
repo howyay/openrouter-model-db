@@ -100,10 +100,22 @@ PROVIDERS_SCHEMA = pa.schema([
 
 BENCHMARKS_SCHEMA = pa.schema([
     pa.field("model_slug", pa.string()),
-    pa.field("benchmark_name", pa.string()),
-    pa.field("score", pa.float64()),
-    pa.field("unit", pa.string()),
-    pa.field("source", pa.string()),
+    pa.field("aa_name", pa.string()),
+    pa.field("intelligence_index", pa.float64()),
+    pa.field("coding_index", pa.float64()),
+    pa.field("agentic_index", pa.float64()),
+    pa.field("intelligence_percentile", pa.int64()),
+    pa.field("coding_percentile", pa.int64()),
+    pa.field("agentic_percentile", pa.int64()),
+    pa.field("gpqa", pa.float64()),
+    pa.field("hle", pa.float64()),
+    pa.field("scicode", pa.float64()),
+    pa.field("terminalbench_hard", pa.float64()),
+    pa.field("ifbench", pa.float64()),
+    pa.field("lcr", pa.float64()),
+    pa.field("tau2", pa.float64()),
+    pa.field("aa_omniscience_accuracy", pa.float64()),
+    pa.field("aa_omniscience_non_hallucination_rate", pa.float64()),
 ])
 
 ANALYTICS_SCHEMA = pa.schema([
