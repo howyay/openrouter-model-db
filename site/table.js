@@ -1,121 +1,111 @@
 let table = null;
 
+const num = (cell) => {
+    const v = cell.getValue();
+    return v != null ? Math.round(v).toLocaleString() : '<span style="color:#3f3f46">—</span>';
+};
+
 const COLUMNS = [
     {
         title: "Provider", field: "provider", sorter: "string",
-        headerFilter: "input", headerFilterPlaceholder: "Filter...",
-        width: 130,
+        headerFilter: "input", headerFilterPlaceholder: "filter...",
+        minWidth: 100, widthGrow: 2,
     },
     {
-        title: "TTFT (ms)", field: "ttft_ms", sorter: "number",
-        hozAlign: "right", width: 100,
-        formatter: (cell) => {
-            const v = cell.getValue();
-            return v != null ? Math.round(v).toLocaleString() : '—';
-        },
+        title: "TTFT", field: "ttft_ms", sorter: "number",
+        hozAlign: "right", minWidth: 70, widthGrow: 1,
+        formatter: num,
     },
     {
         title: "Tok/s", field: "tokens_per_sec", sorter: "number",
-        hozAlign: "right", width: 80,
-        formatter: (cell) => {
-            const v = cell.getValue();
-            return v != null ? Math.round(v).toLocaleString() : '—';
-        },
+        hozAlign: "right", minWidth: 60, widthGrow: 1,
+        formatter: num,
     },
     {
         title: "$/M in", field: "input_price_per_m", sorter: "number",
-        hozAlign: "right", width: 80,
+        hozAlign: "right", minWidth: 70, widthGrow: 1,
         formatter: (cell) => {
             const v = cell.getValue();
-            if (v == null) return '—';
-            return v < 0.01 ? 'Free' : '$' + v.toFixed(2);
+            if (v == null) return '<span style="color:#3f3f46">—</span>';
+            return v < 0.01 ? '<span style="color:#4ade80">Free</span>' : '$' + v.toFixed(2);
         },
     },
     {
         title: "$/M out", field: "output_price_per_m", sorter: "number",
-        hozAlign: "right", width: 80,
+        hozAlign: "right", minWidth: 70, widthGrow: 1,
         formatter: (cell) => {
             const v = cell.getValue();
-            if (v == null) return '—';
-            return v < 0.01 ? 'Free' : '$' + v.toFixed(2);
+            if (v == null) return '<span style="color:#3f3f46">—</span>';
+            return v < 0.01 ? '<span style="color:#4ade80">Free</span>' : '$' + v.toFixed(2);
         },
     },
     {
         title: "Intel", field: "intelligence_index", sorter: "number",
-        hozAlign: "right", width: 70,
+        hozAlign: "right", minWidth: 55, widthGrow: 1,
         formatter: (cell) => {
             const v = cell.getValue();
-            return v != null ? v.toFixed(1) : '—';
+            return v != null ? v.toFixed(1) : '<span style="color:#3f3f46">—</span>';
         },
     },
     {
         title: "Code", field: "coding_index", sorter: "number",
-        hozAlign: "right", width: 70,
+        hozAlign: "right", minWidth: 55, widthGrow: 1,
         formatter: (cell) => {
             const v = cell.getValue();
-            return v != null ? v.toFixed(1) : '—';
+            return v != null ? v.toFixed(1) : '<span style="color:#3f3f46">—</span>';
         },
     },
     {
         title: "Agent", field: "agentic_index", sorter: "number",
-        hozAlign: "right", width: 70,
+        hozAlign: "right", minWidth: 55, widthGrow: 1,
         formatter: (cell) => {
             const v = cell.getValue();
-            return v != null ? v.toFixed(1) : '—';
+            return v != null ? v.toFixed(1) : '<span style="color:#3f3f46">—</span>';
         },
     },
     {
         title: "Context", field: "context_length", sorter: "number",
-        hozAlign: "right", width: 90, visible: false,
+        hozAlign: "right", minWidth: 70, widthGrow: 1, visible: false,
         formatter: (cell) => {
             const v = cell.getValue();
-            return v != null ? (v / 1000).toFixed(0) + 'k' : '—';
+            return v != null ? (v / 1000).toFixed(0) + 'k' : '<span style="color:#3f3f46">—</span>';
         },
     },
     {
         title: "Reasoning", field: "supports_reasoning", sorter: "boolean",
-        hozAlign: "center", width: 90, visible: false,
+        hozAlign: "center", minWidth: 80, widthGrow: 1, visible: false,
         formatter: "tickCross",
     },
     {
         title: "Quant", field: "quantization", sorter: "string",
-        width: 80, visible: false,
+        minWidth: 60, widthGrow: 1, visible: false,
     },
     {
         title: "Uptime", field: "uptime_pct", sorter: "number",
-        hozAlign: "right", width: 80, visible: false,
+        hozAlign: "right", minWidth: 60, widthGrow: 1, visible: false,
         formatter: (cell) => {
             const v = cell.getValue();
-            return v != null ? v.toFixed(1) + '%' : '—';
+            return v != null ? v.toFixed(1) + '%' : '<span style="color:#3f3f46">—</span>';
         },
     },
     {
         title: "TTFT p95", field: "ttft_p95_ms", sorter: "number",
-        hozAlign: "right", width: 100, visible: false,
-        formatter: (cell) => {
-            const v = cell.getValue();
-            return v != null ? Math.round(v).toLocaleString() : '—';
-        },
+        hozAlign: "right", minWidth: 70, widthGrow: 1, visible: false,
+        formatter: num,
     },
     {
         title: "Tok/s p95", field: "tokens_per_sec_p95", sorter: "number",
-        hozAlign: "right", width: 90, visible: false,
-        formatter: (cell) => {
-            const v = cell.getValue();
-            return v != null ? Math.round(v).toLocaleString() : '—';
-        },
+        hozAlign: "right", minWidth: 70, widthGrow: 1, visible: false,
+        formatter: num,
     },
     {
         title: "Requests", field: "recent_requests", sorter: "number",
-        hozAlign: "right", width: 90, visible: false,
-        formatter: (cell) => {
-            const v = cell.getValue();
-            return v != null ? v.toLocaleString() : '—';
-        },
+        hozAlign: "right", minWidth: 70, widthGrow: 1, visible: false,
+        formatter: num,
     },
     {
         title: "Benchmark", field: "benchmark_config", sorter: "string",
-        width: 150, visible: false,
+        minWidth: 120, widthGrow: 2, visible: false,
     },
 ];
 
@@ -123,18 +113,19 @@ export function createTable(containerEl, data) {
     table = new Tabulator(containerEl, {
         data: data,
         height: "100%",
-        layout: "fitDataFill",
+        layout: "fitColumns",
         groupBy: "model",
         groupStartOpen: true,
         groupToggleElement: "header",
         groupHeader: (value, count) => {
-            return `<span style="font-weight:600">${value}</span> <span style="opacity:0.5">(${count} provider${count !== 1 ? 's' : ''})</span>`;
+            return `${value} <span style="color:#52525b;font-weight:400">${count}</span>`;
         },
         columns: COLUMNS,
         initialSort: [
             { column: "ttft_ms", dir: "asc" },
         ],
         placeholder: "No matching models",
+        resizableColumnFit: true,
     });
     return table;
 }
