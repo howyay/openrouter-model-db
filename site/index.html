@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenRouter Model Explorer</title>
+    <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator_midnight.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>OpenRouter Model Explorer</h1>
+        <nav>
+            <button id="tab-explore" class="tab active">Explore</button>
+            <button id="tab-sql" class="tab">SQL</button>
+        </nav>
+    </header>
+    <main id="view-explore">
+        <aside id="facets">
+            <div id="facets-loading">Loading filters...</div>
+        </aside>
+        <section id="table-container">
+            <div id="loading">Loading database...</div>
+            <div id="table"></div>
+            <div id="status-bar"></div>
+        </section>
+    </main>
+    <main id="view-sql" class="hidden">
+        <div id="sql-editor">
+            <textarea id="sql-input" spellcheck="false">SELECT m.name, e.provider_slug, e.latency_p50, e.throughput_p50
+FROM model_endpoints e
+JOIN models m ON m.slug = e.model_slug
+WHERE e.latency_p50 IS NOT NULL
+ORDER BY e.latency_p50 ASC
+LIMIT 20</textarea>
+            <button id="sql-run">Run (Ctrl+Enter)</button>
+        </div>
+        <div id="sql-error" class="hidden"></div>
+        <div id="sql-results"></div>
+    </main>
+    <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
