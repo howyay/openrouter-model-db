@@ -61,6 +61,15 @@ LEFT JOIN (
 ) b ON b.model_slug = m.slug
 `;
 
+function megaQuery(where = '', orderBy = 'ORDER BY model, provider') {
+    return `WITH mega_view AS (${MEGA_VIEW_SQL}) SELECT * FROM mega_view ${where} ${orderBy}`;
+}
+
+function facetQuery(sql) {
+    // Wrap facet queries so they can reference mega_view as a CTE
+    return query(`WITH mega_view AS (${MEGA_VIEW_SQL}) ${sql}`);
+}
+
 async function main() {
     const loadingEl = document.getElementById('loading');
     const statusBar = document.getElementById('status-bar');
@@ -68,32 +77,27 @@ async function main() {
     // Init DuckDB
     loadingEl.textContent = 'Downloading database...';
     await initDB('public/openrouter.duckdb');
-    loadingEl.textContent = 'Creating view...';
-
-    // Create the mega view
-    await query(`CREATE OR REPLACE VIEW mega_view AS ${MEGA_VIEW_SQL}`);
 
     // Initial data load
     loadingEl.textContent = 'Loading data...';
-    const initialData = await query('SELECT * FROM mega_view ORDER BY model, provider');
+    const initialData = await query(megaQuery());
     loadingEl.classList.add('hidden');
 
     // Create table
     createTable('#table', initialData);
     statusBar.textContent = `${initialData.length} endpoints across ${new Set(initialData.map(r => r.model_slug)).size} models`;
 
-    // Init facets
+    // Init facets — pass facetQuery so facets can query mega_view via CTE
     const facetsEl = document.getElementById('facets');
     document.getElementById('facets-loading').remove();
-    await initFacets(facetsEl, query, async () => {
+    await initFacets(facetsEl, facetQuery, async () => {
         const where = buildWhereClause();
-        const sql = `SELECT * FROM mega_view ${where} ORDER BY model, provider`;
-        const rows = await query(sql);
+        const rows = await query(megaQuery(where));
         updateTable(rows);
         statusBar.textContent = `${rows.length} endpoints across ${new Set(rows.map(r => r.model_slug)).size} models`;
     });
 
-    // Init SQL tab
+    // Init SQL tab — pass raw query so users can write arbitrary SQL
     initSqlTab(query);
 
     // Tab switching
