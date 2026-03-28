@@ -266,16 +266,19 @@ aside#facets::-webkit-scrollbar-thumb { background: var(--border-strong); border
     cursor: pointer;
     width: 100% !important;
     display: flex !important;
+    color: #ffffff !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    padding: 8px 14px !important;
 }
 
 .tabulator-row.tabulator-group:hover {
     background: var(--bg-elevated) !important;
 }
 
+.tabulator-row.tabulator-group span,
 .tabulator-row.tabulator-group .tabulator-group-header {
     color: #ffffff !important;
-    font-size: 12px !important;
-    padding: 8px 14px !important;
     font-weight: 600 !important;
     width: 100% !important;
 }
