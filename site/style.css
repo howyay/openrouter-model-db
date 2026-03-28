@@ -264,6 +264,8 @@ aside#facets::-webkit-scrollbar-thumb { background: var(--border-strong); border
     border-bottom: 1px solid var(--border-strong) !important;
     min-height: 36px !important;
     cursor: pointer;
+    width: 100% !important;
+    display: flex !important;
 }
 
 .tabulator-row.tabulator-group:hover {
@@ -275,6 +277,7 @@ aside#facets::-webkit-scrollbar-thumb { background: var(--border-strong); border
     font-size: 12px !important;
     padding: 8px 14px !important;
     font-weight: 500 !important;
+    width: 100% !important;
 }
 
 .tabulator-row.tabulator-group .tabulator-arrow {
