@@ -2,7 +2,7 @@ let table = null;
 
 const num = (cell) => {
     const v = cell.getValue();
-    return v != null ? Math.round(v).toLocaleString() : '<span style="color:#3f3f46">—</span>';
+    return v != null ? Math.round(v).toLocaleString() : '<span style="color:#52525b">—</span>';
 };
 
 const COLUMNS = [
@@ -26,7 +26,7 @@ const COLUMNS = [
         hozAlign: "right", minWidth: 70, widthGrow: 1,
         formatter: (cell) => {
             const v = cell.getValue();
-            if (v == null) return '<span style="color:#3f3f46">—</span>';
+            if (v == null) return '<span style="color:#52525b">—</span>';
             return v < 0.01 ? '<span style="color:#4ade80">Free</span>' : '$' + v.toFixed(2);
         },
     },
@@ -35,7 +35,7 @@ const COLUMNS = [
         hozAlign: "right", minWidth: 70, widthGrow: 1,
         formatter: (cell) => {
             const v = cell.getValue();
-            if (v == null) return '<span style="color:#3f3f46">—</span>';
+            if (v == null) return '<span style="color:#52525b">—</span>';
             return v < 0.01 ? '<span style="color:#4ade80">Free</span>' : '$' + v.toFixed(2);
         },
     },
@@ -44,7 +44,7 @@ const COLUMNS = [
         hozAlign: "right", minWidth: 55, widthGrow: 1,
         formatter: (cell) => {
             const v = cell.getValue();
-            return v != null ? v.toFixed(1) : '<span style="color:#3f3f46">—</span>';
+            return v != null ? v.toFixed(1) : '<span style="color:#52525b">—</span>';
         },
     },
     {
@@ -52,7 +52,7 @@ const COLUMNS = [
         hozAlign: "right", minWidth: 55, widthGrow: 1,
         formatter: (cell) => {
             const v = cell.getValue();
-            return v != null ? v.toFixed(1) : '<span style="color:#3f3f46">—</span>';
+            return v != null ? v.toFixed(1) : '<span style="color:#52525b">—</span>';
         },
     },
     {
@@ -60,7 +60,7 @@ const COLUMNS = [
         hozAlign: "right", minWidth: 55, widthGrow: 1,
         formatter: (cell) => {
             const v = cell.getValue();
-            return v != null ? v.toFixed(1) : '<span style="color:#3f3f46">—</span>';
+            return v != null ? v.toFixed(1) : '<span style="color:#52525b">—</span>';
         },
     },
     {
@@ -68,7 +68,7 @@ const COLUMNS = [
         hozAlign: "right", minWidth: 70, widthGrow: 1, visible: false,
         formatter: (cell) => {
             const v = cell.getValue();
-            return v != null ? (v / 1000).toFixed(0) + 'k' : '<span style="color:#3f3f46">—</span>';
+            return v != null ? (v / 1000).toFixed(0) + 'k' : '<span style="color:#52525b">—</span>';
         },
     },
     {
@@ -85,7 +85,7 @@ const COLUMNS = [
         hozAlign: "right", minWidth: 60, widthGrow: 1, visible: false,
         formatter: (cell) => {
             const v = cell.getValue();
-            return v != null ? v.toFixed(1) + '%' : '<span style="color:#3f3f46">—</span>';
+            return v != null ? v.toFixed(1) + '%' : '<span style="color:#52525b">—</span>';
         },
     },
     {

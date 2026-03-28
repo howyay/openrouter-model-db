@@ -2,14 +2,14 @@
 
 :root {
     --bg: #09090b;
-    --bg-surface: #0f0f12;
-    --bg-elevated: #18181b;
-    --bg-row-hover: #1a1a1f;
-    --border: rgba(255, 255, 255, 0.06);
-    --border-strong: rgba(255, 255, 255, 0.1);
-    --text: #fafafa;
-    --text-secondary: #a1a1aa;
-    --text-dim: #52525b;
+    --bg-surface: #131316;
+    --bg-elevated: #1c1c21;
+    --bg-row-hover: #1c1c21;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.12);
+    --text: #f4f4f5;
+    --text-secondary: #d4d4d8;
+    --text-dim: #71717a;
     --accent: #22d3ee;
     --accent-muted: rgba(34, 211, 238, 0.15);
     --green: #4ade80;
@@ -273,10 +273,10 @@ aside#facets::-webkit-scrollbar-thumb { background: var(--border-strong); border
 }
 
 .tabulator-row.tabulator-group .tabulator-group-header {
-    color: var(--text) !important;
+    color: #ffffff !important;
     font-size: 12px !important;
     padding: 8px 14px !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
     width: 100% !important;
 }
 
