@@ -132,7 +132,6 @@ export function createTable(containerEl, data) {
         },
         columns: COLUMNS,
         initialSort: [
-            { column: "model", dir: "asc" },
             { column: "ttft_ms", dir: "asc" },
         ],
         placeholder: "No matching models",

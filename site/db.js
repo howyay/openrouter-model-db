@@ -41,5 +41,14 @@ export async function initDB(dbUrl) {
 export async function query(sql) {
     if (!conn) throw new Error('Database not initialized');
     const result = await conn.query(sql);
-    return result.toArray().map(row => row.toJSON());
+    // Convert BigInt values to Number (DuckDB-WASM returns BigInt for int64)
+    return result.toArray().map(row => {
+        const obj = row.toJSON();
+        for (const key in obj) {
+            if (typeof obj[key] === 'bigint') {
+                obj[key] = Number(obj[key]);
+            }
+        }
+        return obj;
+    });
 }
