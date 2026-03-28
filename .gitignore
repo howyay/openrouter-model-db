@@ -1,5 +1,6 @@
 data/*.duckdb
 data/*.parquet
+site/public/*.duckdb
 __pycache__/
 *.egg-info/
 .venv/

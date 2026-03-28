@@ -1,6 +1,6 @@
 import { initDB, query } from './db.js';
 import { initFacets, buildWhereClause } from './facets.js';
-import { createTable, updateTable, getRowCount } from './table.js';
+import { createTable, updateTable } from './table.js';
 import { initSqlTab } from './sql-tab.js';
 
 const MEGA_VIEW_SQL = `
