@@ -33,15 +33,22 @@ jobs:
       - name: Run scraper
         run: uv run scrape -o data/ -c 10 -d 0.1
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Build site
         run: |
-          mkdir -p site/public
-          cp data/openrouter.duckdb site/public/openrouter.duckdb
+          cd site
+          npm ci
+          mkdir -p public
+          cp ../data/openrouter.duckdb public/openrouter.duckdb
+          npm run build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site/
+          path: site/dist/
 
       - name: Deploy to GitHub Pages
         id: deployment

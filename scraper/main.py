@@ -6,8 +6,10 @@ from pathlib import Path
 import httpx
 
 from scraper.api import (
-    fetch_model_list, fetch_all_model_pages,
-    fetch_all_endpoint_stats, fetch_all_benchmarks,
+    fetch_model_list,
+    fetch_all_model_pages,
+    fetch_all_endpoint_stats,
+    fetch_all_benchmarks,
 )
 from scraper.rsc import extract_rsc_model_data, extract_rsc_categories
 from scraper.transform import (
@@ -101,8 +103,11 @@ async def scrape(
     print("4. Fetching benchmark data...")
     async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
         benchmarks_data = await fetch_all_benchmarks(
-            client, model_info_for_stats,
-            concurrency=concurrency, delay=delay, on_progress=_progress,
+            client,
+            model_info_for_stats,
+            concurrency=concurrency,
+            delay=delay,
+            on_progress=_progress,
         )
     print(f"\n   Got benchmarks for {len(benchmarks_data)} models")
 
@@ -111,32 +116,41 @@ async def scrape(
         for entry in entries:
             evals = entry.get("benchmark_data", {}).get("evaluations", {})
             pcts = entry.get("percentiles", {})
-            all_benchmarks.append({
-                "model_slug": slug,
-                "aa_name": entry.get("aa_name"),
-                "intelligence_index": evals.get("artificial_analysis_intelligence_index"),
-                "coding_index": evals.get("artificial_analysis_coding_index"),
-                "agentic_index": evals.get("artificial_analysis_agentic_index"),
-                "intelligence_percentile": pcts.get("intelligence_percentile"),
-                "coding_percentile": pcts.get("coding_percentile"),
-                "agentic_percentile": pcts.get("agentic_percentile"),
-                "gpqa": evals.get("gpqa"),
-                "hle": evals.get("hle"),
-                "scicode": evals.get("scicode"),
-                "terminalbench_hard": evals.get("terminalbench_hard"),
-                "ifbench": evals.get("ifbench"),
-                "lcr": evals.get("lcr"),
-                "tau2": evals.get("tau2"),
-                "aa_omniscience_accuracy": evals.get("aa_omniscience_accuracy"),
-                "aa_omniscience_non_hallucination_rate": evals.get("aa_omniscience_non_hallucination_rate"),
-            })
+            all_benchmarks.append(
+                {
+                    "model_slug": slug,
+                    "aa_name": entry.get("aa_name"),
+                    "intelligence_index": evals.get(
+                        "artificial_analysis_intelligence_index"
+                    ),
+                    "coding_index": evals.get("artificial_analysis_coding_index"),
+                    "agentic_index": evals.get("artificial_analysis_agentic_index"),
+                    "intelligence_percentile": pcts.get("intelligence_percentile"),
+                    "coding_percentile": pcts.get("coding_percentile"),
+                    "agentic_percentile": pcts.get("agentic_percentile"),
+                    "gpqa": evals.get("gpqa"),
+                    "hle": evals.get("hle"),
+                    "scicode": evals.get("scicode"),
+                    "terminalbench_hard": evals.get("terminalbench_hard"),
+                    "ifbench": evals.get("ifbench"),
+                    "lcr": evals.get("lcr"),
+                    "tau2": evals.get("tau2"),
+                    "aa_omniscience_accuracy": evals.get("aa_omniscience_accuracy"),
+                    "aa_omniscience_non_hallucination_rate": evals.get(
+                        "aa_omniscience_non_hallucination_rate"
+                    ),
+                }
+            )
 
     # Fetch latency/throughput stats from frontend API (public, no auth needed)
     print("5. Fetching endpoint performance stats...")
     async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
         stats_data = await fetch_all_endpoint_stats(
-            client, model_info_for_stats,
-            concurrency=concurrency, delay=delay, on_progress=_progress,
+            client,
+            model_info_for_stats,
+            concurrency=concurrency,
+            delay=delay,
+            on_progress=_progress,
         )
     print(f"\n   Got stats for {len(stats_data)} models")
 
@@ -152,10 +166,9 @@ async def scrape(
 
     has_latency = 0
     for ep_row in all_endpoints:
-        stats = (
-            stats_by_endpoint_id.get(ep_row.get("endpoint_id"))
-            or stats_by_endpoint_name.get(ep_row.get("endpoint_name"))
-        )
+        stats = stats_by_endpoint_id.get(
+            ep_row.get("endpoint_id")
+        ) or stats_by_endpoint_name.get(ep_row.get("endpoint_name"))
         if stats:
             ep_row["latency_p50"] = stats.get("p50_latency")
             ep_row["latency_p75"] = stats.get("p75_latency")
@@ -171,6 +184,30 @@ async def scrape(
             ep_row["stats_window_minutes"] = stats.get("window_minutes")
             has_latency += 1
 
+    # Deduplicate models by slug (free variants scrape the same model page)
+    seen_slugs = set()
+    deduped_models = []
+    for m in all_models:
+        slug = m.get("slug")
+        if slug and slug in seen_slugs:
+            continue
+        if slug:
+            seen_slugs.add(slug)
+        deduped_models.append(m)
+    all_models = deduped_models
+
+    # Deduplicate endpoints by endpoint_id (variantGroups can contain duplicates)
+    seen_ids = set()
+    deduped = []
+    for ep in all_endpoints:
+        eid = ep.get("endpoint_id")
+        if eid and eid in seen_ids:
+            continue
+        if eid:
+            seen_ids.add(eid)
+        deduped.append(ep)
+    all_endpoints = deduped
+
     print(f"   {len(all_endpoints)} endpoints, {len(all_providers)} providers")
     print(f"   {has_latency} endpoints with latency/throughput stats")
     print(f"   {len(all_benchmarks)} benchmarks, {len(all_analytics)} analytics rows")
@@ -178,30 +215,48 @@ async def scrape(
 
     db_path = str(output_dir / "openrouter.duckdb")
     print(f"6. Writing DuckDB database to {db_path}...")
-    write_all(db_path, {
-        "models": all_models,
-        "model_endpoints": all_endpoints,
-        "providers": list(all_providers.values()),
-        "model_benchmarks": all_benchmarks,
-        "model_analytics": all_analytics,
-        "model_categories": all_categories,
-    })
+    write_all(
+        db_path,
+        {
+            "models": all_models,
+            "model_endpoints": all_endpoints,
+            "providers": list(all_providers.values()),
+            "model_benchmarks": all_benchmarks,
+            "model_analytics": all_analytics,
+            "model_categories": all_categories,
+        },
+    )
     print("   Done.")
 
 
 def cli():
     """CLI entry point."""
     import argparse
-    parser = argparse.ArgumentParser(description="Scrape OpenRouter model data to DuckDB")
-    parser.add_argument("-o", "--output", default=str(DATA_DIR), help="Output directory")
-    parser.add_argument("-c", "--concurrency", type=int, default=10, help="Max concurrent requests")
-    parser.add_argument("-d", "--delay", type=float, default=0.1, help="Delay between requests (seconds)")
+
+    parser = argparse.ArgumentParser(
+        description="Scrape OpenRouter model data to DuckDB"
+    )
+    parser.add_argument(
+        "-o", "--output", default=str(DATA_DIR), help="Output directory"
+    )
+    parser.add_argument(
+        "-c", "--concurrency", type=int, default=10, help="Max concurrent requests"
+    )
+    parser.add_argument(
+        "-d",
+        "--delay",
+        type=float,
+        default=0.1,
+        help="Delay between requests (seconds)",
+    )
     args = parser.parse_args()
-    asyncio.run(scrape(
-        output_dir=Path(args.output),
-        concurrency=args.concurrency,
-        delay=args.delay,
-    ))
+    asyncio.run(
+        scrape(
+            output_dir=Path(args.output),
+            concurrency=args.concurrency,
+            delay=args.delay,
+        )
+    )
 
 
 if __name__ == "__main__":

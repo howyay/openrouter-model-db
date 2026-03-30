@@ -1,6 +1,9 @@
 data/*.duckdb
 data/*.parquet
 site/public/*.duckdb
+site/node_modules/
+site/dist/
 __pycache__/
 *.egg-info/
 .venv/
+.pytest_cache/

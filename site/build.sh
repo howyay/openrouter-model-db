@@ -2,4 +2,6 @@
 set -e
 mkdir -p site/public
 cp data/openrouter.duckdb site/public/openrouter.duckdb
-echo "Build complete — site/ ready for deploy"
+cd site
+npm run build
+echo "Build complete — site/dist/ ready for deploy"

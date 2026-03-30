@@ -1,0 +1,164 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg: #09090b;
+    --bg-surface: #131316;
+    --bg-elevated: #1c1c21;
+    --bg-row-hover: #1c1c21;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.12);
+    --text: #f4f4f5;
+    --text-secondary: #d4d4d8;
+    --text-dim: #71717a;
+    --accent: #22d3ee;
+    --accent-muted: rgba(34, 211, 238, 0.15);
+    --green: #4ade80;
+    --red: #f87171;
+    --font-data: 'JetBrains Mono', 'SF Mono', monospace;
+    --font-ui: 'DM Sans', -apple-system, sans-serif;
+}
+
+body {
+    font-family: var(--font-ui);
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.hidden { display: none !important; }
+
+/* ── Tabulator Overrides ─────────────────────── */
+
+.tabulator {
+    background: var(--bg) !important;
+    border: none !important;
+    font-family: var(--font-data) !important;
+    font-size: 12px !important;
+    color: var(--text) !important;
+}
+
+.tabulator-header {
+    background: var(--bg) !important;
+    border-bottom: 1px solid var(--border-strong) !important;
+}
+
+.tabulator-header .tabulator-col {
+    background: transparent !important;
+    border-right: none !important;
+    padding: 0 !important;
+}
+
+.tabulator-header .tabulator-col-content {
+    padding: 8px 12px !important;
+}
+
+.tabulator-header .tabulator-col-title {
+    color: var(--text-dim) !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+}
+
+.tabulator-header .tabulator-col.tabulator-sortable .tabulator-col-title {
+    padding-right: 16px !important;
+}
+
+.tabulator-header .tabulator-col .tabulator-header-filter input {
+    background: var(--bg-elevated) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 3px !important;
+    color: var(--text) !important;
+    font-family: var(--font-data) !important;
+    font-size: 11px !important;
+    padding: 3px 6px !important;
+    outline: none !important;
+}
+
+.tabulator-header .tabulator-col .tabulator-header-filter input:focus {
+    border-color: var(--accent) !important;
+}
+
+.tabulator-tableholder {
+    background: var(--bg) !important;
+}
+
+.tabulator-tableholder::-webkit-scrollbar { width: 6px; height: 6px; }
+.tabulator-tableholder::-webkit-scrollbar-track { background: transparent; }
+.tabulator-tableholder::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+
+.tabulator-row {
+    background: var(--bg) !important;
+    border-bottom: 1px solid var(--border) !important;
+    min-height: 32px !important;
+}
+
+.tabulator-row:hover {
+    background: var(--bg-row-hover) !important;
+}
+
+.tabulator-row .tabulator-cell {
+    border-right: none !important;
+    padding: 6px 12px !important;
+    color: var(--text-secondary) !important;
+}
+
+.tabulator-row.tabulator-row-even {
+    background: var(--bg) !important;
+}
+
+.tabulator-row.tabulator-row-even:hover {
+    background: var(--bg-row-hover) !important;
+}
+
+.tabulator-row.tabulator-group {
+    background: var(--bg-surface) !important;
+    border-bottom: 1px solid var(--border-strong) !important;
+    min-height: 36px !important;
+    cursor: pointer;
+    width: 100% !important;
+    display: flex !important;
+    color: #ffffff !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    padding: 8px 14px !important;
+}
+
+.tabulator-row.tabulator-group:hover {
+    background: var(--bg-elevated) !important;
+}
+
+.tabulator-row.tabulator-group span,
+.tabulator-row.tabulator-group .tabulator-group-header {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    width: 100% !important;
+}
+
+.tabulator-row.tabulator-group .tabulator-arrow {
+    border-color: var(--text-dim) transparent transparent transparent !important;
+}
+
+.tabulator-col.tabulator-sortable[aria-sort="ascending"] .tabulator-col-title,
+.tabulator-col.tabulator-sortable[aria-sort="descending"] .tabulator-col-title {
+    color: var(--accent) !important;
+}
+
+.tabulator-footer {
+    background: var(--bg) !important;
+    border-top: 1px solid var(--border) !important;
+}
+
+.tabulator .tabulator-placeholder span {
+    color: var(--text-dim) !important;
+    font-size: 12px !important;
+}

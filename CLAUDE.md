@@ -1,16 +1,13 @@
 # OpenRouter Model Database
 
-Scrapes all OpenRouter model pages and produces Parquet files queryable via DuckDB, agx, and Apache Superset.
+Scrapes all OpenRouter model pages and produces a DuckDB database with a Svelte explorer UI.
 
 ## Package Management
 
 Always use `uv` instead of `pip`. Never run `pip install` directly.
 
 - Install dependencies: `uv sync`
-- Install with dev deps: `uv sync --dev`
 - Add a dependency: `uv add <package>`
-- Add a dev dependency: `uv add --dev <package>`
-- Run a script: `uv run <command>`
 - Run the scraper: `uv run scrape`
 - Run tests: `uv run pytest`
 
@@ -19,11 +16,15 @@ Always use `uv` instead of `pip`. Never run `pip install` directly.
 - `scraper/` — Python package with the scraping pipeline
   - `api.py` — async HTTP client for OpenRouter API
   - `rsc.py` — Next.js RSC payload extractor from HTML
-  - `benchmarks.py` — regex benchmark extractor from descriptions
   - `transform.py` — nested JSON to flat row dicts
-  - `parquet.py` — PyArrow schemas and Parquet writers
+  - `db.py` — DuckDB writer
   - `main.py` — orchestrator: fetch all → transform → write
-- `data/` — output Parquet files (gitignored)
+- `site/` — Svelte + Vite frontend (explorer UI)
+  - `src/App.svelte` — main app with tabs (Explore / SQL)
+  - `src/components/` — Sidebar, DataTable, facet components
+  - `src/lib/db.js` — DuckDB-WASM client
+  - `src/lib/facets.js` — facet definitions and SQL builder
+- `data/` — output DuckDB database (gitignored)
 - `queries/examples.sql` — example DuckDB queries
 - `docker-compose.yml` — Apache Superset with DuckDB support
 
@@ -32,6 +33,9 @@ Always use `uv` instead of `pip`. Never run `pip install` directly.
 ```bash
 uv run scrape                    # full scrape pipeline
 uv run pytest                    # run tests
+cd site && npm install           # install site deps
+cd site && npm run dev           # dev server (Vite)
+cd site && npm run build         # production build -> site/dist/
 podman compose up -d             # start Superset on port 18630
 ```
 
