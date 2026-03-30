@@ -207,3 +207,29 @@ body {
     color: var(--text-dim) !important;
     font-size: 16px !important;
 }
+
+.table-header-tooltip {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    max-width: 280px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--bg-elevated);
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: var(--font-size-sm);
+    line-height: 1.35;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(2px);
+    transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.table-header-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+}

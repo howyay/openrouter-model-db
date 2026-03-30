@@ -8,6 +8,7 @@
     let containerEl;
     let table = null;
     let resizeObserver;
+    let headerTooltipEl;
 
     const METRIC_FIELDS = [
         'intelligence_index',
@@ -18,6 +19,35 @@
         'input_price_per_m',
         'output_price_per_m',
     ];
+
+    const ensureHeaderTooltip = () => {
+        if (headerTooltipEl) return headerTooltipEl;
+        headerTooltipEl = document.createElement('div');
+        headerTooltipEl.className = 'table-header-tooltip';
+        headerTooltipEl.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(headerTooltipEl);
+        return headerTooltipEl;
+    };
+
+    const hideHeaderTooltip = () => {
+        if (!headerTooltipEl) return;
+        headerTooltipEl.classList.remove('visible');
+        headerTooltipEl.setAttribute('aria-hidden', 'true');
+    };
+
+    const moveHeaderTooltip = (event) => {
+        if (!headerTooltipEl || !headerTooltipEl.classList.contains('visible')) return;
+        headerTooltipEl.style.left = `${event.clientX + 12}px`;
+        headerTooltipEl.style.top = `${event.clientY + 12}px`;
+    };
+
+    const showHeaderTooltip = (text, event) => {
+        const el = ensureHeaderTooltip();
+        el.textContent = text;
+        el.classList.add('visible');
+        el.setAttribute('aria-hidden', 'false');
+        moveHeaderTooltip(event);
+    };
 
     const applyColumnWidths = () => {
         if (!table || !containerEl) return;
@@ -49,12 +79,22 @@
         }
     };
 
-    const applyHeaderTooltips = () => {
+    const wireHeaderTooltips = () => {
         if (!table) return;
         for (const column of table.getColumns()) {
-            const tooltip = column.getDefinition().headerTooltip;
-            if (typeof tooltip === 'string' && tooltip) {
-                column.getElement()?.setAttribute('title', tooltip);
+            const text = column.getDefinition().headerHelp;
+            const el = column.getElement();
+            if (!el) continue;
+
+            el.removeAttribute('title');
+            el.onmouseenter = null;
+            el.onmousemove = null;
+            el.onmouseleave = null;
+
+            if (typeof text === 'string' && text) {
+                el.onmouseenter = (event) => showHeaderTooltip(text, event);
+                el.onmousemove = moveHeaderTooltip;
+                el.onmouseleave = hideHeaderTooltip;
             }
         }
     };
@@ -67,13 +107,13 @@
     const COLUMNS = [
         {
             title: "Provider", field: "provider", sorter: "string",
-            headerTooltip: "Provider or provider region for this endpoint",
+            headerHelp: "Provider or provider region for this endpoint",
             headerFilter: "input", headerFilterPlaceholder: "filter...",
             minWidth: 100,
         },
         {
             title: "Intel", field: "intelligence_index", sorter: "number",
-            headerTooltip: "Artificial Analysis intelligence index for the model",
+            headerHelp: "Artificial Analysis intelligence index for the model",
             hozAlign: "right", minWidth: 72,
             formatter: (cell) => {
                 const v = cell.getValue();
@@ -87,7 +127,7 @@
         },
         {
             title: "Code", field: "coding_index", sorter: "number",
-            headerTooltip: "Artificial Analysis coding index for the model",
+            headerHelp: "Artificial Analysis coding index for the model",
             hozAlign: "right", minWidth: 72,
             formatter: (cell) => {
                 const v = cell.getValue();
@@ -101,7 +141,7 @@
         },
         {
             title: "Agent", field: "agentic_index", sorter: "number",
-            headerTooltip: "Artificial Analysis agentic index for the model",
+            headerHelp: "Artificial Analysis agentic index for the model",
             hozAlign: "right", minWidth: 72,
             formatter: (cell) => {
                 const v = cell.getValue();
@@ -115,21 +155,21 @@
         },
         {
             title: "TTFT", field: "ttft_ms", sorter: "number",
-            headerTooltip: "Time to first token in milliseconds; missing values sort last",
+            headerHelp: "Time to first token in milliseconds; missing values sort last",
             sorterParams: { alignEmptyValues: "bottom" },
             hozAlign: "right", minWidth: 72,
             formatter: num,
         },
         {
             title: "Tok/s", field: "tokens_per_sec", sorter: "number",
-            headerTooltip: "Median output throughput in tokens per second; missing values sort last",
+            headerHelp: "Median output throughput in tokens per second; missing values sort last",
             sorterParams: { alignEmptyValues: "bottom" },
             hozAlign: "right", minWidth: 72,
             formatter: num,
         },
         {
             title: "$/M in", field: "input_price_per_m", sorter: "number",
-            headerTooltip: "Input token price in USD per 1 million tokens",
+            headerHelp: "Input token price in USD per 1 million tokens",
             hozAlign: "right", minWidth: 72,
             formatter: (cell) => {
                 const v = cell.getValue();
@@ -139,7 +179,7 @@
         },
         {
             title: "$/M out", field: "output_price_per_m", sorter: "number",
-            headerTooltip: "Output token price in USD per 1 million tokens",
+            headerHelp: "Output token price in USD per 1 million tokens",
             hozAlign: "right", minWidth: 72,
             formatter: (cell) => {
                 const v = cell.getValue();
@@ -150,7 +190,7 @@
 
         {
             title: "Context", field: "context_length", sorter: "number",
-            headerTooltip: "Maximum context window length",
+            headerHelp: "Maximum context window length",
             hozAlign: "right", minWidth: 70, widthGrow: 1, visible: false,
             formatter: (cell) => {
                 const v = cell.getValue();
@@ -159,18 +199,18 @@
         },
         {
             title: "Reasoning", field: "supports_reasoning", sorter: "boolean",
-            headerTooltip: "Whether the endpoint supports reasoning mode",
+            headerHelp: "Whether the endpoint supports reasoning mode",
             hozAlign: "center", minWidth: 80, widthGrow: 1, visible: false,
             formatter: "tickCross",
         },
         {
             title: "Quant", field: "quantization", sorter: "string",
-            headerTooltip: "Model quantization or precision label",
+            headerHelp: "Model quantization or precision label",
             minWidth: 60, widthGrow: 1, visible: false,
         },
         {
             title: "Uptime", field: "uptime_pct", sorter: "number",
-            headerTooltip: "Provider uptime percentage over the last 30 minutes",
+            headerHelp: "Provider uptime percentage over the last 30 minutes",
             hozAlign: "right", minWidth: 60, widthGrow: 1, visible: false,
             formatter: (cell) => {
                 const v = cell.getValue();
@@ -179,25 +219,25 @@
         },
         {
             title: "TTFT p95", field: "ttft_p95_ms", sorter: "number",
-            headerTooltip: "95th percentile time to first token in milliseconds",
+            headerHelp: "95th percentile time to first token in milliseconds",
             hozAlign: "right", minWidth: 70, widthGrow: 1, visible: false,
             formatter: num,
         },
         {
             title: "Tok/s p95", field: "tokens_per_sec_p95", sorter: "number",
-            headerTooltip: "95th percentile output throughput in tokens per second",
+            headerHelp: "95th percentile output throughput in tokens per second",
             hozAlign: "right", minWidth: 70, widthGrow: 1, visible: false,
             formatter: num,
         },
         {
             title: "Requests", field: "recent_requests", sorter: "number",
-            headerTooltip: "Recent request volume in the stats window",
+            headerHelp: "Recent request volume in the stats window",
             hozAlign: "right", minWidth: 70, widthGrow: 1, visible: false,
             formatter: num,
         },
         {
             title: "Benchmark", field: "benchmark_config", sorter: "string",
-            headerTooltip: "Artificial Analysis benchmark configuration used for model scores",
+            headerHelp: "Artificial Analysis benchmark configuration used for model scores",
             minWidth: 120, widthGrow: 2, visible: false,
         },
     ];
@@ -220,12 +260,11 @@
         });
 
         const syncHeaderAndWidths = () => {
-            applyHeaderTooltips();
             applyColumnWidths();
+            wireHeaderTooltips();
         };
 
         table.on("renderComplete", syncHeaderAndWidths);
-        applyHeaderTooltips();
         applyColumnWidths();
 
         resizeObserver = new ResizeObserver(() => {
@@ -236,6 +275,9 @@
         return () => {
             resizeObserver?.disconnect();
             resizeObserver = null;
+            hideHeaderTooltip();
+            headerTooltipEl?.remove();
+            headerTooltipEl = null;
             table?.destroy();
             table = null;
         };
