@@ -53,14 +53,14 @@ export function setLocale(l) {
 }
 
 export const LOCALES = [
-    { code: 'en', label: 'EN' },
+    { code: 'en', label: 'English' },
     { code: 'ar', label: 'العربية' },
     { code: 'bn', label: 'বাংলা' },
     { code: 'de', label: 'Deutsch' },
     { code: 'es', label: 'Español' },
     { code: 'fr', label: 'Français' },
     { code: 'hi', label: 'हिन्दी' },
-    { code: 'id', label: 'Indonesia' },
+    { code: 'id', label: 'Bahasa Indonesia' },
     { code: 'it', label: 'Italiano' },
     { code: 'ja', label: '日本語' },
     { code: 'ko', label: '한국어' },

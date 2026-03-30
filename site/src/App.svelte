@@ -6,10 +6,12 @@
     import Sidebar from './components/Sidebar.svelte';
     import DataTable from './components/DataTable.svelte';
     import SqlTab from './components/SqlTab.svelte';
+    import ThemeIcon from './components/ThemeIcon.svelte';
 
     let activeTab = $state('explore');
 
     let loadingMsg = $state('Downloading database...');
+    let themeMenuOpen = $state(false);
 
     let endpointCount = $state(0);
     let modelCount = $state(0);
@@ -22,6 +24,13 @@
     let initialData = $state([]);
     let sidebarRef;
     let tableRef;
+    let themeMenuRef;
+
+    const THEME_OPTIONS = [
+        { value: 'system', label: 'System' },
+        { value: 'light', label: 'Light' },
+        { value: 'dark', label: 'Dark' },
+    ];
 
     function megaQuery(where = '', orderBy = 'ORDER BY model, provider') {
         return `SELECT * FROM mega_view ${where} ${orderBy}`;
@@ -35,6 +44,31 @@
         const rows = await query(megaQuery(where));
         tableRef.replaceData(rows);
         updateCounts(rows);
+    }
+
+    function getThemeLabel(mode) {
+        return THEME_OPTIONS.find((option) => option.value === mode)?.label ?? 'System';
+    }
+
+    function toggleThemeMenu() {
+        themeMenuOpen = !themeMenuOpen;
+    }
+
+    function chooseTheme(mode) {
+        setTheme(mode);
+        themeMenuOpen = false;
+    }
+
+    function onDocumentClick(event) {
+        if (themeMenuRef && !themeMenuRef.contains(event.target)) {
+            themeMenuOpen = false;
+        }
+    }
+
+    function onDocumentKeydown(event) {
+        if (event.key === 'Escape') {
+            themeMenuOpen = false;
+        }
     }
 
     onMount(async () => {
@@ -56,6 +90,8 @@
     });
 </script>
 
+<svelte:document onclick={onDocumentClick} onkeydown={onDocumentKeydown} />
+
 <header>
     <h1>{t('OpenRouter Model Explorer')}</h1>
     <nav>
@@ -75,11 +111,40 @@
                 <option value={loc.code} selected={getLocale() === loc.code}>{loc.label}</option>
             {/each}
         </select>
-        <select class="locale-select" onchange={(e) => setTheme(e.target.value)}>
-            <option value="system" selected={getPreference() === 'system'}>⚙ System</option>
-            <option value="light" selected={getPreference() === 'light'}>☀ Light</option>
-            <option value="dark" selected={getPreference() === 'dark'}>🌙 Dark</option>
-        </select>
+        <div class="theme-menu" bind:this={themeMenuRef}>
+            <button
+                class="theme-trigger"
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={themeMenuOpen}
+                onclick={(event) => {
+                    event.stopPropagation();
+                    toggleThemeMenu();
+                }}
+            >
+                <ThemeIcon mode={getPreference()} />
+                <span>{getThemeLabel(getPreference())}</span>
+                <svg class="theme-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+
+            {#if themeMenuOpen}
+                <div class="theme-popover" role="menu">
+                    {#each THEME_OPTIONS as option}
+                        <button
+                            class="theme-option"
+                            class:active={getPreference() === option.value}
+                            type="button"
+                            role="menuitemradio"
+                            aria-checked={getPreference() === option.value}
+                            onclick={() => chooseTheme(option.value)}
+                        >
+                            <ThemeIcon mode={option.value} />
+                            <span>{option.label}</span>
+                        </button>
+                    {/each}
+                </div>
+            {/if}
+        </div>
     </nav>
 </header>
 
@@ -220,6 +285,73 @@
     .locale-select option {
         background: var(--bg-surface);
         color: var(--text);
+    }
+
+    .theme-menu {
+        position: relative;
+    }
+
+    .theme-trigger,
+    .theme-option {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: transparent;
+        color: var(--text-dim);
+        font-family: var(--font-ui);
+        font-size: 13px;
+        cursor: pointer;
+        outline: none;
+        transition: all 0.15s;
+    }
+
+    .theme-trigger {
+        min-width: 104px;
+        justify-content: space-between;
+        padding: 4px 8px;
+    }
+
+    .theme-trigger:hover,
+    .theme-option:hover,
+    .theme-option.active {
+        color: var(--text-secondary);
+        border-color: var(--border-strong);
+        background: var(--bg-elevated);
+    }
+
+    .theme-trigger:focus-visible,
+    .theme-option:focus-visible {
+        border-color: var(--accent);
+    }
+
+    .theme-popover {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 132px;
+        padding: 6px;
+        border: 1px solid var(--border-strong);
+        border-radius: 8px;
+        background: var(--bg-surface);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+        z-index: 30;
+    }
+
+    .theme-option {
+        width: 100%;
+        padding: 6px 8px;
+        border-color: transparent;
+        justify-content: flex-start;
+    }
+
+    .theme-chevron {
+        color: var(--text-dim);
+        flex-shrink: 0;
     }
 
     .hidden {
