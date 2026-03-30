@@ -113,7 +113,7 @@
 
     .range-label {
         font-family: var(--font-data);
-        font-size: 11px;
+        font-size: 13px;
         color: var(--text-dim);
         white-space: nowrap;
         min-width: 28px;

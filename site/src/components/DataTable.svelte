@@ -10,7 +10,7 @@
 
     const num = (cell) => {
         const v = cell.getValue();
-        return v != null ? Math.round(v).toLocaleString() : '<span style="color:#52525b">—</span>';
+        return v != null ? Math.round(v).toLocaleString() : '<span style="color:var(--text-dim)">—</span>';
     };
 
     const COLUMNS = [
@@ -29,7 +29,7 @@
                 const group = row.getGroup();
                 const rows = group ? group.getRows() : [];
                 if (rows.length > 0 && rows[0] !== row) return '';
-                return `<span style="color:#a78bfa">${v.toFixed(1)}</span>`;
+                return `<span style="color:var(--benchmark-intel)">${v.toFixed(1)}</span>`;
             },
         },
         {
@@ -42,7 +42,7 @@
                 const group = row.getGroup();
                 const rows = group ? group.getRows() : [];
                 if (rows.length > 0 && rows[0] !== row) return '';
-                return `<span style="color:#38bdf8">${v.toFixed(1)}</span>`;
+                return `<span style="color:var(--benchmark-code)">${v.toFixed(1)}</span>`;
             },
         },
         {
@@ -55,7 +55,7 @@
                 const group = row.getGroup();
                 const rows = group ? group.getRows() : [];
                 if (rows.length > 0 && rows[0] !== row) return '';
-                return `<span style="color:#34d399">${v.toFixed(1)}</span>`;
+                return `<span style="color:var(--benchmark-agent)">${v.toFixed(1)}</span>`;
             },
         },
         {
@@ -73,8 +73,8 @@
             hozAlign: "right", minWidth: 70, widthGrow: 1,
             formatter: (cell) => {
                 const v = cell.getValue();
-                if (v == null) return '<span style="color:#52525b">—</span>';
-                return v < 0.01 ? '<span style="color:#4ade80">Free</span>' : '$' + v.toFixed(2);
+                if (v == null) return '<span style="color:var(--text-dim)">—</span>';
+                return v < 0.01 ? '<span style="color:var(--green)">Free</span>' : '$' + v.toFixed(2);
             },
         },
         {
@@ -82,8 +82,8 @@
             hozAlign: "right", minWidth: 70, widthGrow: 1,
             formatter: (cell) => {
                 const v = cell.getValue();
-                if (v == null) return '<span style="color:#52525b">—</span>';
-                return v < 0.01 ? '<span style="color:#4ade80">Free</span>' : '$' + v.toFixed(2);
+                if (v == null) return '<span style="color:var(--text-dim)">—</span>';
+                return v < 0.01 ? '<span style="color:var(--green)">Free</span>' : '$' + v.toFixed(2);
             },
         },
 
@@ -92,7 +92,7 @@
             hozAlign: "right", minWidth: 70, widthGrow: 1, visible: false,
             formatter: (cell) => {
                 const v = cell.getValue();
-                return v != null ? (v / 1000).toFixed(0) + 'k' : '<span style="color:#52525b">—</span>';
+                return v != null ? (v / 1000).toFixed(0) + 'k' : '<span style="color:var(--text-dim)">—</span>';
             },
         },
         {
@@ -109,7 +109,7 @@
             hozAlign: "right", minWidth: 60, widthGrow: 1, visible: false,
             formatter: (cell) => {
                 const v = cell.getValue();
-                return v != null ? v.toFixed(1) + '%' : '<span style="color:#52525b">—</span>';
+                return v != null ? v.toFixed(1) + '%' : '<span style="color:var(--text-dim)">—</span>';
             },
         },
         {
@@ -142,7 +142,7 @@
             groupStartOpen: true,
             groupToggleElement: "header",
             groupHeader: (value, count) => {
-                return `${value} <span style="color:#52525b;font-weight:400">${count}</span>`;
+                return `${value} <span style="color:var(--text-dim);font-weight:400">${count}</span>`;
             },
             columns: COLUMNS,
             initialSort: [{ column: "ttft_ms", dir: "asc" }],

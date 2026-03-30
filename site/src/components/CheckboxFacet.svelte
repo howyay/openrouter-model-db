@@ -1,5 +1,6 @@
 <script>
-    let { title, values, startOpen = true, onchange } = $props();
+    import { t } from '../lib/i18n.svelte.js';
+    let { title, icon = '', values, startOpen = true, onchange } = $props();
 
     let open = $state(startOpen);
     let checked = $state(new Set(values));
@@ -43,6 +44,7 @@
 <div class="facet-group">
     <button class="facet-title" onclick={() => open = !open}>
         <span class="chevron" class:open>▶</span>
+        {#if icon}<span class="title-icon">{@html icon}</span>{/if}
         {title}
         {#if checked.size < values.length}
             <span class="badge">{checked.size}/{values.length}</span>
@@ -53,13 +55,13 @@
             <input
                 class="facet-search"
                 type="text"
-                placeholder="Search..."
+                placeholder={t('Search...')}
                 bind:value={search}
             >
         {/if}
         <div class="facet-actions">
-            <button onclick={selectAll}>All</button>
-            <button onclick={selectNone}>None</button>
+            <button onclick={selectAll}>{t('All')}</button>
+            <button onclick={selectNone}>{t('None')}</button>
         </div>
         <div class="facet-options">
             {#each filtered as val}
@@ -77,7 +79,7 @@
 </div>
 
 <style>
-    .facet-group { margin-bottom: 14px; }
+    .facet-group { margin-bottom: 18px; }
 
     .facet-title {
         display: flex;
@@ -91,13 +93,24 @@
         font-weight: 500;
         margin-bottom: 6px;
         color: var(--text-dim);
-        font-size: 12px;
+        font-size: 14px;
         text-transform: uppercase;
         letter-spacing: 0.08em;
         padding: 2px 0;
     }
 
     .facet-title:hover { color: var(--text-secondary); }
+
+    .title-icon {
+        display: flex;
+        align-items: center;
+        line-height: 0;
+    }
+
+    .title-icon :global(svg) {
+        flex-shrink: 0;
+        opacity: 0.7;
+    }
 
     .chevron {
         font-size: 8px;
@@ -109,7 +122,7 @@
 
     .badge {
         margin-left: auto;
-        font-size: 10px;
+        font-size: 12px;
         color: var(--accent);
         font-weight: 400;
     }
@@ -123,7 +136,7 @@
         border-radius: 4px;
         color: var(--text);
         font-family: var(--font-data);
-        font-size: 11px;
+        font-size: 13px;
         outline: none;
     }
 
@@ -142,7 +155,7 @@
         border: none;
         color: var(--text-dim);
         font-family: var(--font-data);
-        font-size: 10px;
+        font-size: 12px;
         cursor: pointer;
         padding: 0;
         text-decoration: underline;
@@ -169,10 +182,10 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        padding: 4px 4px;
+        padding: 6px 6px;
         border-radius: 3px;
         cursor: pointer;
-        font-size: 13px;
+        font-size: 15px;
         color: var(--text-secondary);
         transition: all 0.1s;
     }

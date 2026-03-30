@@ -1,5 +1,5 @@
 <script>
-    let { title, label, onchange } = $props();
+    let { title, icon = '', label, onchange } = $props();
     let checked = $state(false);
 
     export function isChecked() {
@@ -8,7 +8,10 @@
 </script>
 
 <div class="facet-group">
-    <span class="facet-title">{title}</span>
+    <span class="facet-title">
+        {#if icon}<span class="title-icon">{@html icon}</span>{/if}
+        {title}
+    </span>
     <div class="facet-options">
         <label>
             <input
@@ -22,17 +25,30 @@
 </div>
 
 <style>
-    .facet-group { margin-bottom: 14px; }
+    .facet-group { margin-bottom: 18px; }
 
     .facet-title {
-        display: block;
+        display: flex;
+        align-items: center;
+        gap: 6px;
         font-family: var(--font-data);
         font-weight: 500;
         margin-bottom: 6px;
         color: var(--text-dim);
-        font-size: 12px;
+        font-size: 14px;
         text-transform: uppercase;
         letter-spacing: 0.08em;
+    }
+
+    .title-icon {
+        display: flex;
+        align-items: center;
+        line-height: 0;
+    }
+
+    .title-icon :global(svg) {
+        flex-shrink: 0;
+        opacity: 0.7;
     }
 
     .facet-options {
@@ -45,10 +61,10 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        padding: 4px 4px;
+        padding: 6px 6px;
         border-radius: 3px;
         cursor: pointer;
-        font-size: 13px;
+        font-size: 15px;
         color: var(--text-secondary);
         transition: all 0.1s;
     }

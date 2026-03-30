@@ -1,6 +1,7 @@
 <script>
     import { onMount } from 'svelte';
     import { TabulatorFull as Tabulator } from 'tabulator-tables';
+    import { t } from '../lib/i18n.svelte.js';
 
     let { queryFn } = $props();
 
@@ -66,7 +67,7 @@ LIMIT 20`;
             spellcheck="false"
             onkeydown={onKeydown}
         >{defaultSql}</textarea>
-        <button class="sql-run" onclick={runQuery}>Run (Ctrl+Enter)</button>
+        <button class="sql-run" onclick={runQuery}>{t('Run (Ctrl+Enter)')}</button>
     </div>
     {#if errorMsg}
         <div class="sql-error">{errorMsg}</div>
@@ -99,7 +100,7 @@ LIMIT 20`;
         border: 1px solid var(--border);
         border-radius: 4px;
         font-family: var(--font-data);
-        font-size: 12px;
+        font-size: 14px;
         resize: vertical;
         line-height: 1.5;
     }
@@ -117,7 +118,7 @@ LIMIT 20`;
         border-radius: 4px;
         cursor: pointer;
         font-family: var(--font-data);
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 500;
         align-self: flex-end;
         transition: all 0.15s;
@@ -133,7 +134,7 @@ LIMIT 20`;
         border-bottom: 1px solid rgba(248, 113, 113, 0.15);
         color: var(--red);
         font-family: var(--font-data);
-        font-size: 12px;
+        font-size: 14px;
     }
 
     .sql-results { flex: 1; overflow: hidden; }
