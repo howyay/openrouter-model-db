@@ -19,10 +19,10 @@
     --benchmark-agent: #34d399;
     --font-data: 'JetBrains Mono', 'SF Mono', monospace;
     --font-ui: 'DM Sans', -apple-system, sans-serif;
-    --font-size-xs: 11px;
-    --font-size-sm: 13px;
-    --font-size-base: 14px;
-    --font-size-lg: 15px;
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-base: 15px;
+    --font-size-lg: 16px;
 }
 
 :root.dark {
@@ -87,7 +87,7 @@ body {
     background: var(--bg) !important;
     border: none !important;
     font-family: var(--font-data) !important;
-    font-size: 14px !important;
+    font-size: 16px !important;
     color: var(--text) !important;
 }
 
@@ -108,7 +108,7 @@ body {
 
 .tabulator-header .tabulator-col-title {
     color: var(--text-dim) !important;
-    font-size: 12px !important;
+    font-size: 14px !important;
     font-weight: 600 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.06em !important;
@@ -124,7 +124,7 @@ body {
     border-radius: 3px !important;
     color: var(--text) !important;
     font-family: var(--font-data) !important;
-    font-size: 13px !important;
+    font-size: 15px !important;
     padding: 3px 6px !important;
     outline: none !important;
 }
@@ -173,7 +173,7 @@ body {
     width: 100% !important;
     display: flex !important;
     color: var(--text) !important;
-    font-size: 14px !important;
+    font-size: 16px !important;
     font-weight: 600 !important;
     padding: 8px 14px !important;
 }
@@ -205,5 +205,5 @@ body {
 
 .tabulator .tabulator-placeholder span {
     color: var(--text-dim) !important;
-    font-size: 14px !important;
+    font-size: 16px !important;
 }
