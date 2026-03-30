@@ -20,6 +20,45 @@
             minWidth: 100, widthGrow: 2,
         },
         {
+            title: "Intel", field: "intelligence_index", sorter: "number",
+            hozAlign: "right", minWidth: 45, widthGrow: 0.5,
+            formatter: (cell) => {
+                const v = cell.getValue();
+                if (v == null) return '';
+                const row = cell.getRow();
+                const group = row.getGroup();
+                const rows = group ? group.getRows() : [];
+                if (rows.length > 0 && rows[0] !== row) return '';
+                return `<span style="color:#a78bfa">${v.toFixed(1)}</span>`;
+            },
+        },
+        {
+            title: "Code", field: "coding_index", sorter: "number",
+            hozAlign: "right", minWidth: 45, widthGrow: 0.5,
+            formatter: (cell) => {
+                const v = cell.getValue();
+                if (v == null) return '';
+                const row = cell.getRow();
+                const group = row.getGroup();
+                const rows = group ? group.getRows() : [];
+                if (rows.length > 0 && rows[0] !== row) return '';
+                return `<span style="color:#38bdf8">${v.toFixed(1)}</span>`;
+            },
+        },
+        {
+            title: "Agent", field: "agentic_index", sorter: "number",
+            hozAlign: "right", minWidth: 45, widthGrow: 0.5,
+            formatter: (cell) => {
+                const v = cell.getValue();
+                if (v == null) return '';
+                const row = cell.getRow();
+                const group = row.getGroup();
+                const rows = group ? group.getRows() : [];
+                if (rows.length > 0 && rows[0] !== row) return '';
+                return `<span style="color:#34d399">${v.toFixed(1)}</span>`;
+            },
+        },
+        {
             title: "TTFT", field: "ttft_ms", sorter: "number",
             hozAlign: "right", minWidth: 70, widthGrow: 1,
             formatter: num,
@@ -102,19 +141,8 @@
             groupBy: "model",
             groupStartOpen: true,
             groupToggleElement: "header",
-            groupHeader: (value, count, data) => {
-                const row = data[0] || {};
-                const badges = [];
-                if (row.intelligence_index != null)
-                    badges.push(`<span style="color:#a78bfa">Intel ${row.intelligence_index.toFixed(1)}</span>`);
-                if (row.coding_index != null)
-                    badges.push(`<span style="color:#38bdf8">Code ${row.coding_index.toFixed(1)}</span>`);
-                if (row.agentic_index != null)
-                    badges.push(`<span style="color:#34d399">Agent ${row.agentic_index.toFixed(1)}</span>`);
-                const badgeStr = badges.length
-                    ? `<span style="margin-left:auto;display:flex;gap:12px;font-weight:400;font-size:11px">${badges.join('')}</span>`
-                    : '';
-                return `<span style="display:flex;align-items:center;width:100%">${value} <span style="color:#52525b;font-weight:400;margin-left:6px">${count}</span>${badgeStr}</span>`;
+            groupHeader: (value, count) => {
+                return `${value} <span style="color:#52525b;font-weight:400">${count}</span>`;
             },
             columns: COLUMNS,
             initialSort: [{ column: "ttft_ms", dir: "asc" }],
