@@ -1,7 +1,6 @@
 <script>
     import { onMount } from 'svelte';
     import { initDB, query } from './lib/db.js';
-    import { MEGA_VIEW_SQL } from './lib/facets.js';
     import Sidebar from './components/Sidebar.svelte';
     import DataTable from './components/DataTable.svelte';
     import SqlTab from './components/SqlTab.svelte';
@@ -16,11 +15,11 @@
     let tableRef;
 
     function megaQuery(where = '', orderBy = 'ORDER BY model, provider') {
-        return `WITH mega_view AS (${MEGA_VIEW_SQL}) SELECT * FROM mega_view ${where} ${orderBy}`;
+        return `SELECT * FROM mega_view ${where} ${orderBy}`;
     }
 
     function facetQuery(sql) {
-        return query(`WITH mega_view AS (${MEGA_VIEW_SQL}) ${sql}`);
+        return query(sql);
     }
 
     async function onFacetChange(where) {
@@ -63,27 +62,22 @@
     </nav>
 </header>
 
-{#if activeTab === 'explore'}
-    <main class="view-explore">
-        {#if loaded}
-            <Sidebar bind:this={sidebarRef} queryFn={facetQuery} onchange={onFacetChange} />
-            <section class="table-container">
-                <DataTable bind:this={tableRef} data={initialData} />
-                <div class="status-bar">{status}</div>
-            </section>
-        {:else}
-            <div class="loading-full">
-                <div class="loading">{loadingMsg}</div>
-            </div>
-        {/if}
+{#if loaded}
+    <main class="view-explore" class:hidden={activeTab !== 'explore'}>
+        <Sidebar bind:this={sidebarRef} queryFn={facetQuery} onchange={onFacetChange} />
+        <section class="table-container">
+            <DataTable bind:this={tableRef} data={initialData} />
+            <div class="status-bar">{status}</div>
+        </section>
+    </main>
+    <main class="view-sql" class:hidden={activeTab !== 'sql'}>
+        <SqlTab queryFn={query} />
     </main>
 {:else}
-    <main class="view-sql">
-        {#if loaded}
-            <SqlTab queryFn={query} />
-        {:else}
+    <main class="view-explore">
+        <div class="loading-full">
             <div class="loading">{loadingMsg}</div>
-        {/if}
+        </div>
     </main>
 {/if}
 
@@ -171,5 +165,9 @@
         color: var(--text-dim);
         font-family: var(--font-data);
         font-size: 12px;
+    }
+
+    .hidden {
+        display: none !important;
     }
 </style>

@@ -20,45 +20,43 @@
     let rangeRefs = {};
 
     export async function init() {
-        // Load checkbox facet values
-        const cbData = [];
-        for (const facet of CHECKBOX_FACETS) {
+        const cbPromises = CHECKBOX_FACETS.map(async (facet) => {
             let rows;
             if (facet.isArray) {
                 rows = await queryFn(
                     `SELECT DISTINCT p FROM mega_view, UNNEST(${facet.column}) t(p) WHERE p IS NOT NULL ORDER BY p`
                 );
-                cbData.push({ facet, values: rows.map(r => r.p) });
+                return { facet, values: rows.map(r => r.p) };
             } else if (facet.isJoined) {
-                // Category needs a separate query against the categories table
                 rows = await queryFn(
                     `SELECT DISTINCT category FROM model_categories ORDER BY category`
                 );
-                cbData.push({ facet, values: rows.map(r => r.category) });
+                return { facet, values: rows.map(r => r.category) };
             } else {
                 rows = await queryFn(
                     `SELECT DISTINCT ${facet.column} FROM mega_view WHERE ${facet.column} IS NOT NULL ORDER BY ${facet.column}`
                 );
-                cbData.push({ facet, values: rows.map(r => r[facet.column]) });
+                return { facet, values: rows.map(r => r[facet.column]) };
             }
-        }
-        checkboxData = cbData;
+        });
 
-        // Load range stats
-        const rData = [];
-        for (const facet of RANGE_FACETS) {
+        const rangePromises = RANGE_FACETS.map(async (facet) => {
             const stats = await queryFn(
                 `SELECT MIN(${facet.column}) AS min_val, MAX(${facet.column}) AS max_val FROM mega_view WHERE ${facet.column} IS NOT NULL`
             );
             if (stats.length && stats[0].min_val != null) {
-                rData.push({
-                    facet,
-                    min: Math.floor(stats[0].min_val),
-                    max: Math.ceil(stats[0].max_val),
-                });
+                return { facet, min: Math.floor(stats[0].min_val), max: Math.ceil(stats[0].max_val) };
             }
-        }
-        rangeData = rData;
+            return null;
+        });
+
+        const [cbResults, rangeResults] = await Promise.all([
+            Promise.all(cbPromises),
+            Promise.all(rangePromises),
+        ]);
+
+        checkboxData = cbResults;
+        rangeData = rangeResults.filter(Boolean);
         loading = false;
     }
 

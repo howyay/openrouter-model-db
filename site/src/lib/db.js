@@ -23,14 +23,8 @@ export async function initDB(dbUrl) {
 
     await db.open({});
     conn = await db.connect();
-
-    await conn.query(`ATTACH 'openrouter.duckdb' AS src (READ_ONLY)`);
-    const tables = await conn.query(`SELECT table_name FROM information_schema.tables WHERE table_catalog = 'src'`);
-    for (const row of tables.toArray()) {
-        const name = row.toJSON().table_name;
-        await conn.query(`CREATE TABLE ${name} AS SELECT * FROM src.${name}`);
-    }
-    await conn.query(`DETACH src`);
+    await conn.query(`ATTACH 'openrouter.duckdb' AS db (READ_ONLY)`);
+    await conn.query(`USE db`);
 
     return conn;
 }
