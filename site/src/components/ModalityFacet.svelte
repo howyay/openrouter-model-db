@@ -56,7 +56,7 @@
         font-weight: 500;
         margin-bottom: 6px;
         color: var(--text-dim);
-        font-size: 14px;
+        font-size: 15px;
         text-transform: uppercase;
         letter-spacing: 0.08em;
     }
@@ -82,7 +82,7 @@
         background: transparent;
         color: var(--text-dim);
         font-family: var(--font-ui);
-        font-size: 14px;
+        font-size: 15px;
         cursor: pointer;
         transition: all 0.15s;
         white-space: nowrap;

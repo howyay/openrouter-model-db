@@ -188,7 +188,7 @@
         border-right: 1px solid var(--border);
         overflow-y: auto;
         background: var(--bg);
-        font-size: 14px;
+        font-size: 15px;
     }
 
     .sidebar::-webkit-scrollbar { width: 4px; }
@@ -198,6 +198,6 @@
     .loading {
         color: var(--text-dim);
         font-family: var(--font-data);
-        font-size: 14px;
+        font-size: 15px;
     }
 </style>

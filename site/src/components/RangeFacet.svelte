@@ -37,7 +37,7 @@
         font-weight: 500;
         margin-bottom: 6px;
         color: var(--text-dim);
-        font-size: 14px;
+        font-size: 15px;
         text-transform: uppercase;
         letter-spacing: 0.08em;
     }

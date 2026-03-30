@@ -93,7 +93,7 @@
         font-weight: 500;
         margin-bottom: 6px;
         color: var(--text-dim);
-        font-size: 14px;
+        font-size: 15px;
         text-transform: uppercase;
         letter-spacing: 0.08em;
         padding: 2px 0;
@@ -122,7 +122,7 @@
 
     .badge {
         margin-left: auto;
-        font-size: 12px;
+        font-size: 13px;
         color: var(--accent);
         font-weight: 400;
     }
@@ -136,7 +136,7 @@
         border-radius: 4px;
         color: var(--text);
         font-family: var(--font-data);
-        font-size: 13px;
+        font-size: 14px;
         outline: none;
     }
 
@@ -155,7 +155,7 @@
         border: none;
         color: var(--text-dim);
         font-family: var(--font-data);
-        font-size: 12px;
+        font-size: 13px;
         cursor: pointer;
         padding: 0;
         text-decoration: underline;
@@ -185,7 +185,7 @@
         padding: 6px 6px;
         border-radius: 3px;
         cursor: pointer;
-        font-size: 15px;
+        font-size: 16px;
         color: var(--text-secondary);
         transition: all 0.1s;
     }
