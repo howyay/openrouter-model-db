@@ -25,12 +25,10 @@ function applyTheme(theme) {
     root.classList.add(theme);
 }
 
-export function cycleTheme() {
-    const order = ['system', 'light', 'dark'];
-    const idx = order.indexOf(preference);
-    preference = /** @type {'system' | 'light' | 'dark'} */ (order[(idx + 1) % 3]);
+export function setTheme(value) {
+    preference = /** @type {'system' | 'light' | 'dark'} */ (value);
     localStorage.setItem(STORAGE_KEY, preference);
-    applyTheme(resolved);
+    applyTheme(preference === 'system' ? getSystemTheme() : preference);
 }
 
 export function initTheme() {
