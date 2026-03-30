@@ -116,7 +116,7 @@
 
     header h1 {
         font-family: var(--font-data);
-        font-size: 15px;
+        font-size: 16px;
         font-weight: 500;
         color: var(--text-secondary);
         letter-spacing: 0.02em;
@@ -139,7 +139,7 @@
         color: var(--text-dim);
         cursor: pointer;
         font-family: var(--font-ui);
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 500;
         transition: all 0.15s;
     }
@@ -153,7 +153,7 @@
 
     .view-explore {
         display: grid;
-        grid-template-columns: 260px 1fr;
+        grid-template-columns: 300px 1fr;
         flex: 1;
         overflow: hidden;
     }
@@ -167,7 +167,7 @@
     .status-bar {
         padding: 6px 16px;
         font-family: var(--font-data);
-        font-size: 13px;
+        font-size: 14px;
         color: var(--text-dim);
         border-top: 1px solid var(--border);
         background: var(--bg);
@@ -192,7 +192,7 @@
         text-align: center;
         color: var(--text-dim);
         font-family: var(--font-data);
-        font-size: 14px;
+        font-size: 15px;
     }
 
     .locale-select {
@@ -202,7 +202,7 @@
         background: transparent;
         color: var(--text-dim);
         font-family: var(--font-ui);
-        font-size: 12px;
+        font-size: 13px;
         cursor: pointer;
         outline: none;
         transition: all 0.15s;
