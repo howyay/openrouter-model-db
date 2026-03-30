@@ -47,30 +47,7 @@
                 return v < 0.01 ? '<span style="color:#4ade80">Free</span>' : '$' + v.toFixed(2);
             },
         },
-        {
-            title: "Intel", field: "intelligence_index", sorter: "number",
-            hozAlign: "right", minWidth: 55, widthGrow: 1,
-            formatter: (cell) => {
-                const v = cell.getValue();
-                return v != null ? v.toFixed(1) : '<span style="color:#52525b">—</span>';
-            },
-        },
-        {
-            title: "Code", field: "coding_index", sorter: "number",
-            hozAlign: "right", minWidth: 55, widthGrow: 1,
-            formatter: (cell) => {
-                const v = cell.getValue();
-                return v != null ? v.toFixed(1) : '<span style="color:#52525b">—</span>';
-            },
-        },
-        {
-            title: "Agent", field: "agentic_index", sorter: "number",
-            hozAlign: "right", minWidth: 55, widthGrow: 1,
-            formatter: (cell) => {
-                const v = cell.getValue();
-                return v != null ? v.toFixed(1) : '<span style="color:#52525b">—</span>';
-            },
-        },
+
         {
             title: "Context", field: "context_length", sorter: "number",
             hozAlign: "right", minWidth: 70, widthGrow: 1, visible: false,
@@ -125,8 +102,19 @@
             groupBy: "model",
             groupStartOpen: true,
             groupToggleElement: "header",
-            groupHeader: (value, count) => {
-                return `${value} <span style="color:#52525b;font-weight:400">${count}</span>`;
+            groupHeader: (value, count, data) => {
+                const row = data[0] || {};
+                const badges = [];
+                if (row.intelligence_index != null)
+                    badges.push(`<span style="color:#a78bfa">Intel ${row.intelligence_index.toFixed(1)}</span>`);
+                if (row.coding_index != null)
+                    badges.push(`<span style="color:#38bdf8">Code ${row.coding_index.toFixed(1)}</span>`);
+                if (row.agentic_index != null)
+                    badges.push(`<span style="color:#34d399">Agent ${row.agentic_index.toFixed(1)}</span>`);
+                const badgeStr = badges.length
+                    ? `<span style="margin-left:auto;display:flex;gap:12px;font-weight:400;font-size:11px">${badges.join('')}</span>`
+                    : '';
+                return `<span style="display:flex;align-items:center;width:100%">${value} <span style="color:#52525b;font-weight:400;margin-left:6px">${count}</span>${badgeStr}</span>`;
             },
             columns: COLUMNS,
             initialSort: [{ column: "ttft_ms", dir: "asc" }],

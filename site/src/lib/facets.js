@@ -18,7 +18,7 @@ export const MODALITY_FACETS = [
 
 // Checkbox facets (dynamic values loaded from DB)
 export const CHECKBOX_FACETS = [
-    { id: 'provider', title: 'Providers', column: 'provider' },
+    { id: 'provider', title: 'Providers', column: 'provider_slug' },
     { id: 'model_group', title: 'Series', column: 'model_group' },
     { id: 'author', title: 'Model Authors', column: 'author' },
     { id: 'category', title: 'Categories', column: 'category', isJoined: true },
@@ -54,7 +54,11 @@ SELECT
     m.input_modalities,
     m.output_modalities,
     e.endpoint_id,
-    e.provider_slug AS provider,
+    e.provider_slug,
+    CASE WHEN e.provider_region IS NOT NULL
+         THEN e.provider_slug || ' (' || e.provider_region || ')'
+         ELSE e.provider_slug
+    END AS provider,
     e.quantization,
     e.variant,
     e.is_free,
