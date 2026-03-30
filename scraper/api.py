@@ -49,39 +49,45 @@ async def fetch_all_endpoint_stats(
     delay: float = REQUEST_DELAY,
     on_progress=None,
 ) -> dict[str, list[dict]]:
-    """Fetch endpoint stats for all models.
+    """Fetch endpoint stats for all models/variants.
 
     Args:
-        models: list of dicts with 'slug' and 'permaslug' keys.
+        models: list of dicts with 'slug', 'permaslug', and optional 'variants'.
 
     Returns dict mapping model slug -> list of endpoint stat dicts.
     """
     semaphore = asyncio.Semaphore(concurrency)
     results: dict[str, list[dict]] = {}
     completed = 0
+    total_fetches = sum(
+        len(m.get("variants") or ["standard"]) for m in models if m.get("permaslug")
+    )
 
-    async def _fetch_one(slug: str, permaslug: str):
+    async def _fetch_one(slug: str, permaslug: str, variant: str):
         nonlocal completed
         async with semaphore:
-            stats = await fetch_endpoint_stats(client, permaslug)
+            stats = await fetch_endpoint_stats(client, permaslug, variant=variant)
             if stats:
-                results[slug] = stats
+                results.setdefault(slug, []).extend(stats)
             completed += 1
             if on_progress:
-                on_progress(completed, len(models), slug)
+                on_progress(completed, total_fetches, f"{slug} [{variant}]")
             await asyncio.sleep(delay)
 
-    tasks = [
-        _fetch_one(m["slug"], m["permaslug"])
-        for m in models if m.get("permaslug")
-    ]
+    tasks = []
+    for m in models:
+        if not m.get("permaslug"):
+            continue
+        variants = sorted({v for v in (m.get("variants") or ["standard"]) if v})
+        if not variants:
+            variants = ["standard"]
+        for variant in variants:
+            tasks.append(_fetch_one(m["slug"], m["permaslug"], variant))
     await asyncio.gather(*tasks)
     return results
 
 
-async def fetch_benchmarks(
-    client: httpx.AsyncClient, slug: str
-) -> list[dict]:
+async def fetch_benchmarks(client: httpx.AsyncClient, slug: str) -> list[dict]:
     """Fetch Artificial Analysis benchmark data for a model.
 
     Uses the internal benchmarks API with the model's slug or permaslug.
@@ -128,8 +134,7 @@ async def fetch_all_benchmarks(
             await asyncio.sleep(delay)
 
     tasks = [
-        _fetch_one(m["slug"], m["permaslug"])
-        for m in models if m.get("permaslug")
+        _fetch_one(m["slug"], m["permaslug"]) for m in models if m.get("permaslug")
     ]
     await asyncio.gather(*tasks)
     return results

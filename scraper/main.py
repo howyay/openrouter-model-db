@@ -63,7 +63,7 @@ async def scrape(
     skipped = 0
 
     # First pass: extract RSC data and build model list with permaslugs
-    model_info_for_stats = []
+    permaslugs_by_slug = {}
 
     print("3. Transforming data...")
     for slug, html in pages.items():
@@ -84,7 +84,7 @@ async def scrape(
         # Collect permaslugs for stats fetch
         permaslug = rsc_data["model"].get("permaslug")
         if permaslug:
-            model_info_for_stats.append({"slug": slug, "permaslug": permaslug})
+            permaslugs_by_slug[slug] = permaslug
 
         all_endpoints.extend(transform_endpoints(rsc_data))
 
@@ -96,6 +96,25 @@ async def scrape(
 
         rsc_categories = extract_rsc_categories(html)
         all_categories.extend(transform_categories(slug, rsc_categories))
+
+    model_info_for_stats = []
+    variants_by_slug = {}
+    for ep in all_endpoints:
+        model_slug = ep.get("model_slug")
+        if not model_slug:
+            continue
+        variants_by_slug.setdefault(model_slug, set()).add(
+            ep.get("variant") or "standard"
+        )
+
+    for slug, permaslug in permaslugs_by_slug.items():
+        model_info_for_stats.append(
+            {
+                "slug": slug,
+                "permaslug": permaslug,
+                "variants": sorted(variants_by_slug.get(slug, {"standard"})),
+            }
+        )
 
     print(f"   Processed {len(all_models)} models, skipped {skipped}")
 
