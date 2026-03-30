@@ -103,7 +103,7 @@ body {
 }
 
 .tabulator-header .tabulator-col-content {
-    padding: 8px 12px !important;
+    padding: 8px 10px !important;
 }
 
 .tabulator-header .tabulator-col-title {
@@ -153,7 +153,7 @@ body {
 
 .tabulator-row .tabulator-cell {
     border-right: none !important;
-    padding: 6px 12px !important;
+    padding: 6px 10px !important;
     color: var(--text-secondary) !important;
 }
 
