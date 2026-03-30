@@ -60,11 +60,13 @@
         },
         {
             title: "TTFT", field: "ttft_ms", sorter: "number",
+            sorterParams: { alignEmptyValues: "bottom" },
             hozAlign: "right", minWidth: 70, widthGrow: 1,
             formatter: num,
         },
         {
             title: "Tok/s", field: "tokens_per_sec", sorter: "number",
+            sorterParams: { alignEmptyValues: "bottom" },
             hozAlign: "right", minWidth: 60, widthGrow: 1,
             formatter: num,
         },
