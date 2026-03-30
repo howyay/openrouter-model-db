@@ -100,7 +100,7 @@ LIMIT 20`;
         border: 1px solid var(--border);
         border-radius: 4px;
         font-family: var(--font-data);
-        font-size: 14px;
+        font-size: 15px;
         resize: vertical;
         line-height: 1.5;
     }
@@ -118,7 +118,7 @@ LIMIT 20`;
         border-radius: 4px;
         cursor: pointer;
         font-family: var(--font-data);
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 500;
         align-self: flex-end;
         transition: all 0.15s;
@@ -134,7 +134,7 @@ LIMIT 20`;
         border-bottom: 1px solid rgba(248, 113, 113, 0.15);
         color: var(--red);
         font-family: var(--font-data);
-        font-size: 14px;
+        font-size: 15px;
     }
 
     .sql-results { flex: 1; overflow: hidden; }
