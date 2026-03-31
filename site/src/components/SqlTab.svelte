@@ -138,4 +138,20 @@ LIMIT 20`;
     }
 
     .sql-results { flex: 1; overflow: hidden; }
+
+    @media (max-width: 700px) {
+        .sql-editor {
+            flex-direction: column;
+            padding: 12px;
+        }
+
+        .sql-input {
+            min-height: 140px;
+        }
+
+        .sql-run {
+            width: 100%;
+            align-self: stretch;
+        }
+    }
 </style>

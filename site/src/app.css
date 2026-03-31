@@ -135,6 +135,8 @@ body {
 
 .tabulator-tableholder {
     background: var(--bg) !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
 }
 
 .tabulator-tableholder::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -232,4 +234,22 @@ body {
 .table-header-tooltip.visible {
     opacity: 1;
     transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+    .tabulator {
+        font-size: 15px !important;
+    }
+
+    .tabulator-header .tabulator-col-title {
+        font-size: 13px !important;
+    }
+
+    .tabulator-header .tabulator-col-content {
+        padding: 8px 8px !important;
+    }
+
+    .tabulator-row .tabulator-cell {
+        padding: 6px 8px !important;
+    }
 }

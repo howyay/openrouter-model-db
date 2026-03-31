@@ -55,14 +55,17 @@
         const totalWidth = containerEl.clientWidth;
         if (!totalWidth) return;
 
-        const minProviderWidth = 100;
-        const minMetricWidth = 72;
+        const isMobile = totalWidth <= 640;
+        const minProviderWidth = isMobile ? 96 : 100;
+        const minMetricWidth = isMobile ? 56 : 72;
 
         let metricWidth = Math.max(
             minMetricWidth,
             Math.ceil((totalWidth - Math.floor(totalWidth / 3)) / METRIC_FIELDS.length)
         );
-        let providerWidth = totalWidth - metricWidth * METRIC_FIELDS.length;
+        let providerWidth = isMobile
+            ? Math.max(minProviderWidth, Math.floor(totalWidth * 0.42))
+            : totalWidth - metricWidth * METRIC_FIELDS.length;
 
         if (providerWidth < minProviderWidth) {
             providerWidth = minProviderWidth;
@@ -109,6 +112,7 @@
             title: "Provider", field: "provider", sorter: "string",
             headerHelp: "Provider or provider region for this endpoint",
             headerFilter: "input", headerFilterPlaceholder: "filter...",
+            frozen: true,
             minWidth: 100,
         },
         {
