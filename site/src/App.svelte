@@ -12,6 +12,8 @@
 
     let loadingMsg = $state('Downloading database...');
     let themeMenuOpen = $state(false);
+    let mobileFiltersOpen = $state(false);
+    let isMobile = $state(false);
 
     let endpointCount = $state(0);
     let modelCount = $state(0);
@@ -68,11 +70,29 @@
     function onDocumentKeydown(event) {
         if (event.key === 'Escape') {
             themeMenuOpen = false;
+            mobileFiltersOpen = false;
         }
+    }
+
+    function updateViewportState() {
+        isMobile = window.innerWidth <= 820;
+        if (!isMobile) {
+            mobileFiltersOpen = false;
+        }
+    }
+
+    function toggleMobileFilters() {
+        mobileFiltersOpen = !mobileFiltersOpen;
+    }
+
+    function closeMobileFilters() {
+        mobileFiltersOpen = false;
     }
 
     onMount(async () => {
         initTheme();
+        updateViewportState();
+        window.addEventListener('resize', updateViewportState);
         try {
             await initDB('openrouter.duckdb');
             loadingMsg = t('Loading data...');
@@ -87,6 +107,10 @@
             loadingMsg = `Error: ${err.message}`;
             console.error(err);
         }
+
+        return () => {
+            window.removeEventListener('resize', updateViewportState);
+        };
     });
 </script>
 
@@ -105,6 +129,12 @@
             class:active={activeTab === 'sql'}
             onclick={() => activeTab = 'sql'}
         >{t('SQL')}</button>
+        {#if isMobile && activeTab === 'explore'}
+            <button class="filters-trigger" type="button" onclick={toggleMobileFilters}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M6 12h12"/><path d="M10 18h4"/></svg>
+                <span>Filters</span>
+            </button>
+        {/if}
         <span class="nav-sep"></span>
         <select class="locale-select" onchange={(e) => setLocale(e.target.value)}>
             {#each LOCALES as loc}
@@ -150,8 +180,20 @@
 
 {#if loaded}
     <main class="view-explore" class:hidden={activeTab !== 'explore'}>
-        <Sidebar bind:this={sidebarRef} queryFn={facetQuery} onchange={onFacetChange} />
+        <button class="sidebar-backdrop" class:open={isMobile && mobileFiltersOpen} type="button" aria-label="Close filters" onclick={closeMobileFilters}></button>
+        <div class="sidebar-shell" class:mobile-open={isMobile && mobileFiltersOpen}>
+            <div class="sidebar-mobile-header">
+                <strong>Filters</strong>
+                <button type="button" class="sidebar-close" onclick={closeMobileFilters} aria-label="Close filters">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            <Sidebar bind:this={sidebarRef} queryFn={facetQuery} onchange={onFacetChange} />
+        </div>
         <section class="table-container">
+            {#if isMobile}
+                <div class="table-mobile-hint">Swipe the table horizontally for more columns.</div>
+            {/if}
             <DataTable bind:this={tableRef} data={initialData} />
             <div class="status-bar">{endpointCount} {t('endpoints across')} {modelCount} {t('models')}</div>
         </section>
@@ -188,6 +230,28 @@
     }
 
     nav { display: flex; gap: 2px; align-items: center; }
+
+    .filters-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: transparent;
+        color: var(--text-dim);
+        cursor: pointer;
+        font-family: var(--font-ui);
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.15s;
+    }
+
+    .filters-trigger:hover {
+        color: var(--text-secondary);
+        border-color: var(--border-strong);
+        background: var(--bg-elevated);
+    }
 
     .nav-sep {
         width: 1px;
@@ -227,6 +291,16 @@
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        min-width: 0;
+    }
+
+    .table-mobile-hint {
+        display: none;
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-surface);
+        color: var(--text-dim);
+        font-size: 13px;
     }
 
     .status-bar {
@@ -354,7 +428,145 @@
         flex-shrink: 0;
     }
 
+    .sidebar-backdrop,
+    .sidebar-mobile-header {
+        display: none;
+    }
+
+    .sidebar-shell {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    :global(.sidebar-shell .sidebar) {
+        height: 100%;
+    }
+
     .hidden {
         display: none !important;
+    }
+
+    @media (max-width: 980px) {
+        header {
+            height: auto;
+            padding: 10px 14px;
+            align-items: flex-start;
+            gap: 10px;
+            flex-direction: column;
+        }
+
+        nav {
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav-sep {
+            display: none;
+        }
+    }
+
+    @media (max-width: 820px) {
+        .view-explore {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar-shell {
+            position: fixed;
+            inset: 0 auto 0 0;
+            width: min(88vw, 360px);
+            background: var(--bg);
+            border-right: 1px solid var(--border-strong);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+            transform: translateX(-100%);
+            transition: transform 180ms ease;
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-shell.mobile-open {
+            transform: translateX(0);
+        }
+
+        .sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            display: block;
+            border: 0;
+            background: rgba(0, 0, 0, 0.45);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 180ms ease;
+            z-index: 30;
+        }
+
+        .sidebar-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .sidebar-mobile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+            font-size: 14px;
+        }
+
+        .sidebar-close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+        }
+
+        .table-mobile-hint {
+            display: block;
+        }
+
+        :global(.sidebar-shell .sidebar) {
+            flex: 1;
+            min-height: 0;
+            border-right: 0;
+        }
+    }
+
+    @media (max-width: 640px) {
+        header h1 {
+            font-size: 15px;
+        }
+
+        .tab,
+        .filters-trigger {
+            font-size: 14px;
+        }
+
+        .locale-select {
+            max-width: 46vw;
+        }
+
+        .theme-trigger {
+            min-width: auto;
+            padding: 4px 7px;
+        }
+
+        .theme-trigger span {
+            display: none;
+        }
+
+        .status-bar {
+            font-size: 13px;
+            padding: 6px 12px;
+        }
     }
 </style>
